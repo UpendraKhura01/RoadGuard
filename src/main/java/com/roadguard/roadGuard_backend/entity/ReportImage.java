@@ -1,0 +1,36 @@
+package com.roadguard.roadGuard_backend.entity;
+
+import com.roadguard.roadGuard_backend.types.ImageSource;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDate;
+
+@Entity
+@Getter
+@Setter
+public class ReportImage {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
+    @OneToOne
+    private HazardReport hazardReport;
+
+    @Column(nullable = false)
+    private String url;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ImageSource imageSource;
+
+    private String contentType;
+
+    private Long fileSize;
+    private Integer height;
+    private Integer width;
+
+    private LocalDate uploadedAt;
+}
