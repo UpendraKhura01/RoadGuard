@@ -4,6 +4,7 @@ import com.roadguard.roadGuard_backend.entity.AiAssessment;
 import com.roadguard.roadGuard_backend.entity.HazardReport;
 import com.roadguard.roadGuard_backend.entity.StatusHistory;
 import com.roadguard.roadGuard_backend.entity.User;
+import com.roadguard.roadGuard_backend.entity.types.FakeLikeliHood;
 import com.roadguard.roadGuard_backend.entity.types.ReportStatus;
 import org.springframework.stereotype.Component;
 
@@ -20,12 +21,12 @@ public class HazardReportUtil {
         if(report.getReportStatus() == ReportStatus.REJECTED){
             return;
         }
-        String isFakeImage = aiAssessment.getFakeLikelihood();
-        if(isFakeImage.equals("High")){
+        FakeLikeliHood isFakeImage = aiAssessment.getFakeLikelihood();
+        if(isFakeImage == FakeLikeliHood.HIGH){
             report.setReportStatus(ReportStatus.AI_REJECTED);
             report.setPriorityScore(0);
         }
-        else if(isFakeImage.equals("Medium")){
+        else if(isFakeImage == FakeLikeliHood.LOW){
             report.setReportStatus(ReportStatus.PENDING_REVIEW);
         }
     }

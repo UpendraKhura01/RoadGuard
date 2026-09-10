@@ -9,7 +9,6 @@ import com.roadguard.roadGuard_backend.entity.HazardReport;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,7 +26,7 @@ public class AiAssessmentServiceImplementation implements  AiAssessmentService{
     public AiAssessment assessReport(HazardReport report, CreateHazardRequestDto request, MultipartFile photo) {
 
         DirectAiResponseDto response = aiUtil.AiAssessReportWithProvider(request, photo);
-        AiAssessment assessment = aiAssessmentRepository.findBYHazardReportId(report.getId())
+        AiAssessment assessment = aiAssessmentRepository.findByHazardReportId(report.getId())
                 .orElseGet(AiAssessment::new);
 
         AiAssessment aiAssessment = AiAssessment.builder()
@@ -52,7 +51,7 @@ public class AiAssessmentServiceImplementation implements  AiAssessmentService{
 
     @Override
     public AiAssessmentResponseDto getAiAssessment(Long reportId) {
-        AiAssessment aiAssessment = aiAssessmentRepository.findBYHazardReportId(reportId)
+        AiAssessment aiAssessment = aiAssessmentRepository.findByHazardReportId(reportId)
                 .orElseThrow(() -> new IllegalArgumentException("AiAssessment not found"));
 
         AiAssessmentResponseDto responseDto = modelMapper.map(aiAssessment, AiAssessmentResponseDto.class);

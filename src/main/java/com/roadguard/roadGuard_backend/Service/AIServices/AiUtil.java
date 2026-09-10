@@ -4,6 +4,7 @@ import com.roadguard.roadGuard_backend.dto.AiAssessmentResponseDto;
 import com.roadguard.roadGuard_backend.dto.CreateHazardRequestDto;
 import com.roadguard.roadGuard_backend.dto.DirectAiResponseDto;
 import com.roadguard.roadGuard_backend.dto.HazardAiAnalysisDto;
+import com.roadguard.roadGuard_backend.entity.types.FakeLikeliHood;
 import com.roadguard.roadGuard_backend.entity.types.HazardCategory;
 import com.roadguard.roadGuard_backend.entity.types.Severity;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +20,10 @@ public class AiUtil {
 
     private final List<AiProvider> providers;
 
-    @Value("{roadguard.ai.provider}")
+    @Value("${roadguard.ai.provider}")
     private String aiProvider;
-    @Value("{roadguard.ai.fallbackEnabled}")
+
+    @Value("${roadguard.ai.fallbackEnabled}")
     private boolean fallbackEnabled;
 
     public AiProvider findProvider(String providerName) {
@@ -87,8 +89,8 @@ public class AiUtil {
         if(aiResponse.getAiPriorityScore() == null){
             aiResponse.setAiPriorityScore(defaultAiPriorityScore(aiResponse.getSeverity(), aiResponse.getHazardCategory()));
         }
-        if (aiResponse.getFakeLikelihood() == null || aiResponse.getFakeLikelihood().isBlank()){
-            aiResponse.setFakeLikelihood(Boolean.TRUE.equals(aiResponse.getValidHazard()) ? "LOW" : "HIGH");
+        if (aiResponse.getFakeLikelihood() == null){
+            aiResponse.setFakeLikelihood(Boolean.TRUE.equals(aiResponse.getValidHazard()) ? FakeLikeliHood.LOW : FakeLikeliHood.HIGH);
         }
         if (aiResponse.getExplanation() == null || aiResponse.getExplanation().isBlank()){
             aiResponse.setExplanation("Ai Assessment Completed");

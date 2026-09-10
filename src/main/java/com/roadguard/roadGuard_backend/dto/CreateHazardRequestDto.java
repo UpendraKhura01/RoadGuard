@@ -22,7 +22,7 @@ public class CreateHazardRequestDto {
 
     private Double longitude;
     private Double latitude;
-    private Double gpsAccuracy;
+    private Double gpsAccuracy;// range 0 - 500 meters
 
     private String address;
     private String city;

@@ -4,12 +4,14 @@ import com.roadguard.roadGuard_backend.entity.types.AuthProvider;
 import com.roadguard.roadGuard_backend.entity.types.Roles;
 import jakarta.persistence.*;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "App_User")
 public class User {
 

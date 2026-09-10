@@ -1,6 +1,7 @@
 package com.roadguard.roadGuard_backend.entity;
 
 
+import com.roadguard.roadGuard_backend.entity.types.FakeLikeliHood;
 import com.roadguard.roadGuard_backend.entity.types.HazardCategory;
 import com.roadguard.roadGuard_backend.entity.types.Severity;
 import jakarta.persistence.*;
@@ -36,7 +37,7 @@ public class AiAssessment {
     private Double confidence;
     private Integer aiPriorityScore;
 
-    private String fakeLikelihood;
+    private FakeLikeliHood fakeLikelihood;
     private String explanation;
     private String rawResponse;
 
