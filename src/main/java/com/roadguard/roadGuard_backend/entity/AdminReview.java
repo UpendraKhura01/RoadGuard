@@ -1,13 +1,13 @@
 package com.roadguard.roadGuard_backend.entity;
 
-import com.roadguard.roadGuard_backend.types.HazardCategory;
-import com.roadguard.roadGuard_backend.types.ReviewDecision;
-import com.roadguard.roadGuard_backend.types.Severity;
+import com.roadguard.roadGuard_backend.entity.types.HazardCategory;
+import com.roadguard.roadGuard_backend.entity.types.ReviewDecision;
+import com.roadguard.roadGuard_backend.entity.types.Severity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 @Entity
@@ -43,6 +43,6 @@ public class AdminReview {
 
     private String comment;
 
-    private LocalDate reviewedAt;
+    private LocalDateTime reviewedAt;
 
 }

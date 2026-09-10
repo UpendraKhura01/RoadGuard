@@ -1,24 +1,25 @@
 package com.roadguard.roadGuard_backend.entity;
 
-import com.roadguard.roadGuard_backend.types.HazardCategory;
-import com.roadguard.roadGuard_backend.types.ReportStatus;
-import com.roadguard.roadGuard_backend.types.Severity;
+import com.roadguard.roadGuard_backend.entity.types.HazardCategory;
+import com.roadguard.roadGuard_backend.entity.types.ReportStatus;
+import com.roadguard.roadGuard_backend.entity.types.Severity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Entity
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class HazardReport {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
-    //shouldn't this be report Id?
+    private Long id;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -37,7 +38,9 @@ public class HazardReport {
     @Enumerated(EnumType.STRING)
     private Severity finalSeverity;
 
-    private ReportStatus status;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ReportStatus reportStatus = ReportStatus.SUBMITTED;
 
     private Integer priorityScore;
 
@@ -49,13 +52,35 @@ public class HazardReport {
 
     private Double gpsAccuracyMeters;
 
+
     private String address;
     private String city;
     private String ward;
 
-    private LocalDate createdAt;
-    private LocalDate updatedAt;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime  updatedAt;
+    private LocalDateTime resolvedAt;
+
+    @PrePersist
+    protected void onCreate(){
+        createdAt = LocalDateTime.now();
+        updatedAt = createdAt;
+
+        if(reportStatus == null){
+            reportStatus = ReportStatus.SUBMITTED;
+        }
+        if(priorityScore == null){
+            priorityScore = 0;
+        }
+    }
+    @PreUpdate
+    protected void onUpdate(){
+        updatedAt = LocalDateTime.now();
+    }
 
 
-
+    protected void onResolve(){
+        resolvedAt = LocalDateTime.now();
+    }
 }

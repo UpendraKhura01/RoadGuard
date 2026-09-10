@@ -1,4 +1,4 @@
-package com.roadguard.roadGuard_backend.types;
+package com.roadguard.roadGuard_backend.entity.types;
 
 public enum NotificationType {
     REPORT_SUBMITTED,

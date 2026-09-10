@@ -1,14 +1,17 @@
 package com.roadguard.roadGuard_backend.entity;
 
-import com.roadguard.roadGuard_backend.types.NotificationType;
+import com.roadguard.roadGuard_backend.entity.types.NotificationType;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Notification {
 
     @Id
@@ -16,7 +19,8 @@ public class Notification {
     private Long id;
 
     /**The user who receives the notification.**/
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     /**Short message title**/
@@ -31,5 +35,10 @@ public class Notification {
     @Column(nullable = false)
     private Boolean isRead;
 
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 }

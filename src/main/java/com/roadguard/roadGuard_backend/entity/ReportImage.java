@@ -1,15 +1,18 @@
 package com.roadguard.roadGuard_backend.entity;
 
-import com.roadguard.roadGuard_backend.types.ImageSource;
+import com.roadguard.roadGuard_backend.entity.types.ImageSource;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-import java.time.LocalDate;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ReportImage {
 
     @Id
@@ -32,5 +35,5 @@ public class ReportImage {
     private Integer height;
     private Integer width;
 
-    private LocalDate uploadedAt;
+    private LocalDateTime uploadedAt;
 }

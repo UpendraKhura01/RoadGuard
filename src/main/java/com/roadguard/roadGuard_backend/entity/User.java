@@ -1,15 +1,16 @@
 package com.roadguard.roadGuard_backend.entity;
 
-import com.roadguard.roadGuard_backend.types.AuthProvider;
-import com.roadguard.roadGuard_backend.types.Roles;
+import com.roadguard.roadGuard_backend.entity.types.AuthProvider;
+import com.roadguard.roadGuard_backend.entity.types.Roles;
 import jakarta.persistence.*;
-import lombok.Data;
+
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
+@Table(name = "App_User")
 public class User {
 
     @Id
@@ -18,20 +19,22 @@ public class User {
 
     private String name;
 
-    @JoinColumn(unique = true, nullable = false)
+    @Column(unique = true, nullable = false)
     private String gmail;
 
     private String phoneNum;
 
-    @JoinColumn(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private AuthProvider authProvider;
 
     @Enumerated(EnumType.STRING)
     private Roles roles;
 
     @JoinColumn(nullable = false)
-    private Boolean isVerified;
+    private Boolean isVerified = false;
 
-    private Long reputationScore;
+    @Column(nullable = false)
+    private Long reputationScore = 0L;
 
 }

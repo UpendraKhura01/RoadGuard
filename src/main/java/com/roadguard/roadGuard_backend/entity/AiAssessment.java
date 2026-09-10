@@ -1,31 +1,52 @@
 package com.roadguard.roadGuard_backend.entity;
 
 
-import com.roadguard.roadGuard_backend.types.HazardCategory;
+import com.roadguard.roadGuard_backend.entity.types.HazardCategory;
+import com.roadguard.roadGuard_backend.entity.types.Severity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class AiAssessment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String provider;
+
     @OneToOne
     @JoinColumn(name = "report_id", nullable = false)
     private HazardReport hazardReport;
 
-    private Boolean validHazard;
-
     @Enumerated(EnumType.STRING)
     private HazardCategory hazardCategory;
 
-
+    private Boolean validHazard;
+    private Boolean isRoadImage;
+    private Boolean descriptionMatchesImage;
+    private Boolean needsAdminReview;
     private Double confidence;
+    private Integer aiPriorityScore;
 
+    private String fakeLikelihood;
     private String explanation;
+    private String rawResponse;
+
+    @Enumerated(EnumType.STRING)
+    private Severity severity;
+
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    private void onCreate(){
+        createdAt = LocalDateTime.now();
+    }
 }
