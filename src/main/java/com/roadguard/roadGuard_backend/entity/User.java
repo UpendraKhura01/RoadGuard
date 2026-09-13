@@ -5,6 +5,11 @@ import com.roadguard.roadGuard_backend.entity.types.Roles;
 import jakarta.persistence.*;
 
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Getter
@@ -13,13 +18,15 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "App_User")
-public class User {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
+
+    private String password;
 
     @Column(unique = true, nullable = false)
     private String gmail;
@@ -39,4 +46,13 @@ public class User {
     @Column(nullable = false)
     private Long reputationScore = 0L;
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    @Override
+    public String getUsername() {
+        return name;
+    }
 }

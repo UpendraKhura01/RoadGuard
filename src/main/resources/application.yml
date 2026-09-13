@@ -1,0 +1,14 @@
+server:
+  servlet:
+    context-path: /roadguard/v1
+roadguard:
+  jwt:
+    secret: ***REMOVED***
+spring.security:
+  oauth2.client:
+
+    registration:
+      google:
+        client-id: ***REMOVED***
+        client-secret: ***REMOVED***
+
