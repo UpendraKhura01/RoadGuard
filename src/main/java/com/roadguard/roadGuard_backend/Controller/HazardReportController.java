@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class HazardReportController {
     private final HazardReportService hazardReportService;
 
-    public ResponseEntity<HazardReportResponseDto> createReport(){
-
-    }
+//    public ResponseEntity<HazardReportResponseDto> createReport(){
+//
+//    }
 }

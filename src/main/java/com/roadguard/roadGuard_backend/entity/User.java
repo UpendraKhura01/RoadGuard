@@ -24,14 +24,16 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
 
     private String password;
 
-    @Column(unique = true, nullable = false)
+
     private String gmail;
 
-    private String phoneNum;
+    @Column(unique = true, nullable = false)
+    private String phoneNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

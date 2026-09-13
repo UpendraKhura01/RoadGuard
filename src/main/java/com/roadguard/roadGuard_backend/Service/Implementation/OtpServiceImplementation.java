@@ -18,7 +18,7 @@ public class OtpServiceImplementation implements OtpService {
 
     public static final int OTP_EXPIRATION_MINUTES = 5;
     private final OtpRepository otpRepository;
-    private final SecureRandom secureRandom;
+    private final SecureRandom secureRandom = new SecureRandom();
 
 
     @Override

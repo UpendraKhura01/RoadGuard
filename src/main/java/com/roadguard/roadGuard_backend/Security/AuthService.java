@@ -35,7 +35,7 @@ public class AuthService {
                 .name(request.getName())
                 .authProvider(AuthProvider.PHONE)
                 .password(passwordEncoder.encode(request.getPassword()))
-                .phoneNum(request.getPhoneNumber())
+                .phoneNumber(request.getPhoneNumber())
                 .roles(Roles.CITIZEN)
                 .isVerified(false)
                 .reputationScore(0L)
