@@ -1,13 +1,14 @@
 package com.roadguard.roadGuard_backend.dto;
 
 import com.roadguard.roadGuard_backend.entity.types.HazardCategory;
+import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -20,7 +21,10 @@ public class CreateHazardRequestDto {
 
     private HazardCategory reportedCategory;
 
+    @NotNull(message = "location data is required")
     private Double longitude;
+
+    @NotNull(message = "location data is required")
     private Double latitude;
     private Double gpsAccuracy;// range 0 - 500 meters
 
@@ -34,5 +38,4 @@ public class CreateHazardRequestDto {
 
     private LocalDateTime capturedAt;
 
-    private MultipartFile photo;
 }

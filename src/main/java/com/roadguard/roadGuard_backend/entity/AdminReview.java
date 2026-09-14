@@ -4,8 +4,7 @@ import com.roadguard.roadGuard_backend.entity.types.HazardCategory;
 import com.roadguard.roadGuard_backend.entity.types.ReviewDecision;
 import com.roadguard.roadGuard_backend.entity.types.Severity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +12,9 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class AdminReview {
 
     @Id

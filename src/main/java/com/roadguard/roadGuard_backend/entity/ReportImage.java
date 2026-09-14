@@ -19,7 +19,8 @@ public class ReportImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToOne
+    @OneToOne(mappedBy = "reportImage")
+    @JoinColumn(nullable = false)
     private HazardReport hazardReport;
 
     @Column(nullable = false)

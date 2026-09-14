@@ -4,6 +4,7 @@ import com.roadguard.roadGuard_backend.Repository.HazardReportRepository;
 import com.roadguard.roadGuard_backend.Repository.ReportImageRepository;
 import com.roadguard.roadGuard_backend.Repository.ReportSecurityCheckRepository;
 import com.roadguard.roadGuard_backend.Repository.UserRepository;
+import com.roadguard.roadGuard_backend.Security.AuthUtil;
 import com.roadguard.roadGuard_backend.Service.*;
 import com.roadguard.roadGuard_backend.Service.AIServices.AiAssessmentService;
 import com.roadguard.roadGuard_backend.dto.CreateHazardRequestDto;
@@ -16,8 +17,12 @@ import com.roadguard.roadGuard_backend.entity.types.ReportStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +39,7 @@ public class HazardReportServiceImplementation implements HazardReportService {
     private final HazardReportUtil hazardReportUtil;
     private final NotificationService notificationService;
     private final ModelMapper modelMapper;
+    private final AuthUtil authUtil;
 
     @Transactional
     public HazardReportResponseDto createReport(Long userid,
@@ -45,8 +51,19 @@ public class HazardReportServiceImplementation implements HazardReportService {
         ReportStatus initialStatus = reportSecurityCheckService.decideInitialStatus(request);
         LocationDetailsDto locationsDetailsDto = reverseLocationService.resolveLocation(request);
 
+        String imageUrl = imageStoringService.storeReportImage(photo);
+        ReportImage image;
+        image = ReportImage.builder()
+                .url(imageUrl)
+                .imageSource(ImageSource.CAMERA)
+                .contentType(photo.getContentType())
+                .fileSize(photo.getSize())
+                .build();
+        ReportImage savedImage = reportImageRepository.save(image);
+
         HazardReport hazardReport = HazardReport.builder()
                 .reportStatus(initialStatus)
+                .reportImage(savedImage)
                 .description(request.getDescription())
                 .user(user)
                 .priorityScore(CalculateInitialScore(request.getReportedCategory(), initialStatus))
@@ -61,17 +78,6 @@ public class HazardReportServiceImplementation implements HazardReportService {
                 .build();
 
         HazardReport savedReport = hazardReportRepository.save(hazardReport);
-
-        String imageUrl = imageStoringService.storeReportImage(photo);
-        ReportImage image;
-        image = ReportImage.builder()
-                .hazardReport(savedReport)
-                .url(imageUrl)
-                .imageSource(ImageSource.CAMERA)
-                .contentType(photo.getContentType())
-                .fileSize(photo.getSize())
-                .build();
-        reportImageRepository.save(image);
 
         ReportSecurityCheck reportSecurityCheck = reportSecurityCheckService.buildSecurityCheck(savedReport, request);
         reportSecurityCheckRepository.save(reportSecurityCheck);
@@ -98,6 +104,47 @@ public class HazardReportServiceImplementation implements HazardReportService {
         responseDto.setImageUrl(imageUrl);
 
         return responseDto;
+    }
+
+    @Override
+    public HazardReportResponseDto getReportById(Long id) {
+        HazardReport report = hazardReportRepository.findById(id).orElse(null);
+        if(report == null){
+            throw new IllegalArgumentException("No report found with id " + id);
+        }
+        HazardReportResponseDto response = modelMapper.map(report, HazardReportResponseDto.class);
+        return response;
+    }
+
+    @Override
+    public List<HazardReportResponseDto> getMyReports(Authentication authentication) {
+        User user = authUtil.getAuthenticatedUser(authentication);
+        List<HazardReport> reports = hazardReportRepository.findByUser(user);
+
+        List<HazardReportResponseDto> response = reports.stream()
+                .map(report -> modelMapper.map(report, HazardReportResponseDto.class))
+                .toList();
+
+        return response;
+    }
+
+    @Override
+    public List<HazardReportResponseDto> getVerifiedReports(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        List<HazardReport> reports = hazardReportRepository.findByReportStatus(ReportStatus.VERIFIED);
+        List<HazardReportResponseDto> response = reports.stream()
+                .map(report -> modelMapper.map(reports, HazardReportResponseDto.class))
+                .toList();
+        return response;
+    }
+
+    @Override
+    public List<HazardReportResponseDto> getReportsByStatus(ReportStatus status) {
+        List<HazardReport> reports = hazardReportRepository.findByReportStatus(status);
+        List<HazardReportResponseDto> response = reports.stream()
+                .map(report -> modelMapper.map(reports, HazardReportResponseDto.class))
+                .toList();
+        return response;
     }
 
     private Integer CalculateInitialScore(HazardCategory reportedCategory, ReportStatus initialStatus) {

@@ -24,6 +24,10 @@ public class HazardReport {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @OneToOne
+    @JoinColumn(nullable = false)
+    private ReportImage reportImage;
+
     private String description;
 
     @Enumerated(EnumType.STRING)

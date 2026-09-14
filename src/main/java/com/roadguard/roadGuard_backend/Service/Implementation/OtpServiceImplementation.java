@@ -69,5 +69,7 @@ public class OtpServiceImplementation implements OtpService {
         if(!otpRecord.getOtp().equals(otp)){
             throw new BadCredentialsException("Otp is invalid");
         }
+
+        otpRepository.delete(otpRecord);
     }
 }

@@ -29,7 +29,7 @@ public class StatusHistory {
     private ReportStatus newStatus;
 
     @ManyToOne
-    private User changeBy;
+    private User changedBy;
 
     private String notes;
 
