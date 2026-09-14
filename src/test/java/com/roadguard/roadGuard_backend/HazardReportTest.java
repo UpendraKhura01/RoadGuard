@@ -49,7 +49,7 @@ public class HazardReportTest {
         User user = User.builder()
                 .name("Upendra")
                 .gmail("demo@gmail.com")
-                .phoneNum("7684081234")
+                .phoneNumber("7684081234")
                 .isVerified(true)
                 .roles(Roles.CITIZEN)
                 .reputationScore(100L)

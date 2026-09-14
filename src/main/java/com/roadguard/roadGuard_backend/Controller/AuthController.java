@@ -18,14 +18,26 @@ public class AuthController {
     private final AuthService authService;
     private final OtpService otpService;
 
-    @PostMapping("/send-otp")
+    @PostMapping("/sendOtp")
     public ResponseEntity<OtpResponse> sendOtp(@RequestBody OtpRequestDto requestDto) {
         OtpResponse otpResponse = otpService.sendOtp(requestDto.getPhoneNumber());
         return ResponseEntity.ok(otpResponse);
     }
-    @PostMapping("/signup-phone-number")
+    @PostMapping("/signup/phoneNumber")
     public ResponseEntity<SignupResponseDto> signupPhoneNumber(@RequestBody SignupRequestDto request){
         SignupResponseDto signupResponseDto = authService.signupPhoneNumber(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(signupResponseDto);
+    }
+
+    @PostMapping("/login/phoneNumber")
+    public ResponseEntity<LoginResponseDto> otpLogin(@RequestBody OtpLoginRequestDto request){
+        LoginResponseDto response = authService.loginPhoneNumber(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/login/password")
+    public ResponseEntity<LoginResponseDto> passwordLogin(@RequestBody passwordLoginRequestDto request){
+        LoginResponseDto response = authService.passwordLogin(request);
+        return ResponseEntity.ok(response);
     }
 }

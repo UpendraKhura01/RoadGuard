@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -23,7 +24,7 @@ public class AuthUtil {
 
     public String generateToken(User user){
         return Jwts.builder()
-                .subject(user.getName())
+                .subject(user.getPhoneNumber())
                 .claim("user_id", user.getId().toString())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
@@ -31,7 +32,7 @@ public class AuthUtil {
                 .compact();
     }
 
-    public String getUSerNameFromToken(String token){
+    public String getUserNameFromToken(String token){
         Claims claims = Jwts.parser()
                 .verifyWith(getSecretKey())
                 .build()
@@ -41,4 +42,17 @@ public class AuthUtil {
         return claims.getSubject();
     }
 
+    public String getPhoneNumber(String token) {
+
+        Claims claims = Jwts.parser()
+                .verifyWith(getSecretKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.getSubject();
+    }
+    public User getAuthenticatedUser(Authentication authentication){
+        return (User) authentication.getPrincipal();
+    }
 }

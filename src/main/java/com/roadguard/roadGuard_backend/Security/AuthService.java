@@ -7,7 +7,10 @@ import com.roadguard.roadGuard_backend.entity.User;
 import com.roadguard.roadGuard_backend.entity.types.AuthProvider;
 import com.roadguard.roadGuard_backend.entity.types.Roles;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +22,7 @@ public class AuthService {
     private final AuthUtil authUtil;
     private final OtpService otpService;
     private final PasswordEncoder passwordEncoder;
-
+    private final AuthenticationManager authenticationManager;
 
     public SignupResponseDto signupPhoneNumber(SignupRequestDto request) {
 
@@ -52,5 +55,42 @@ public class AuthService {
 
     }
 
+    public LoginResponseDto loginPhoneNumber(OtpLoginRequestDto request) {
+        String number = request.getPhoneNumber();
+        User user = userRepository.findByPhoneNumber(number).orElse(null);
+        if(user == null){
+            throw new BadCredentialsException("Number is not registered:" + number);
+        }
+        otpService.verifyOtp(request.getOtp(), request.getPhoneNumber());
 
+        String token = authUtil.generateToken(user);
+
+        return LoginResponseDto.builder()
+                .userId(user.getId())
+                .name(user.getName())
+                .phoneNumber(user.getPhoneNumber())
+                .token(token)
+                .build();
+    }
+
+    public LoginResponseDto passwordLogin(passwordLoginRequestDto request) {
+        String number = request.getPhoneNumber();
+        User user = userRepository.findByPhoneNumber(number).orElse(null);
+        if(user == null){
+            throw new BadCredentialsException("Number is not registered:" + number);
+        }
+        Authentication authentication = authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(request.getPhoneNumber(), request.getPassword()));
+        user = (User) authentication.getPrincipal();
+
+        String token = authUtil.generateToken(user);
+
+        return LoginResponseDto.builder()
+                .token(token)
+                .phoneNumber(number)
+                .name(user.getName())
+                .userId(user.getId())
+                .email(user.getGmail())
+                .build();
+    }
 }

@@ -9,8 +9,8 @@ import java.util.Optional;
 public interface OtpRepository extends JpaRepository<Otp, Long> {
 
 
+    @Transactional
     void deleteByPhoneNumber(String phoneNumber);
 
-    @Transactional
     Optional<Otp> findByPhoneNumber(String phoneNumber);
 }
