@@ -34,6 +34,7 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/updateReportStatus")
     public ResponseEntity<ApiMessageResponseDto> updateReport(Authentication authentication,
                                                               @RequestParam Long reportId,
                                                               @RequestBody UpdateReportStatusRequestDto updates){

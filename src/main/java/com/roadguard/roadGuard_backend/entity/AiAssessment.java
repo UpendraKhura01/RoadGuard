@@ -38,7 +38,11 @@ public class AiAssessment {
     private Integer aiPriorityScore;
 
     private FakeLikeliHood fakeLikelihood;
+
+    @Column(length = 2000)
     private String explanation;
+
+    @Column(columnDefinition = "TEXT")
     private String rawResponse;
 
     @Enumerated(EnumType.STRING)

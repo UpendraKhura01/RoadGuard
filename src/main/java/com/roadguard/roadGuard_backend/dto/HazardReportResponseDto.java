@@ -42,4 +42,7 @@ public class HazardReportResponseDto {
 
     private String imageUrl;
 
+    private String decisionReason;
+    private String aiExplanation;
+
 }

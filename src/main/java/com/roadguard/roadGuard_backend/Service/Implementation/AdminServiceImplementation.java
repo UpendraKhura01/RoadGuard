@@ -55,6 +55,8 @@ public class AdminServiceImplementation implements AdminService {
                 .build();
 
         report.setReportStatus(newStatus);
+        report.setFinalCategory(request.getFinalCategory());
+        report.setFinalSeverity(request.getFinalSeverity());
         hazardReportRepository.save(report);
 
         AdminReview savedReview = adminReviewRepository.save(review);

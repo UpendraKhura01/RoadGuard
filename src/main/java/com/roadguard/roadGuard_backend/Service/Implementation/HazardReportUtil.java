@@ -40,7 +40,7 @@ public class HazardReportUtil {
                 .hazardReport(report)
                 .lastStatus(lastStatus)
                 .newStatus(newStatus)
-                .changeBy(user)
+                .changedBy(user)
                 .notes(explanation)
                 .build();
     }

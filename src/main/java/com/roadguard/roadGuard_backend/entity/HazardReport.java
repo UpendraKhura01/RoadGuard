@@ -61,6 +61,11 @@ public class HazardReport {
     private String city;
     private String ward;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    private ReportSecurityCheck reportSecurityCheck;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private AiAssessment aiAssessment;
 
     private LocalDateTime createdAt;
     private LocalDateTime  updatedAt;

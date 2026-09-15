@@ -81,11 +81,13 @@ public class HazardReportServiceImplementation implements HazardReportService {
 
         ReportSecurityCheck reportSecurityCheck = reportSecurityCheckService.buildSecurityCheck(savedReport, request);
         reportSecurityCheckRepository.save(reportSecurityCheck);
+        savedReport.setReportSecurityCheck(reportSecurityCheck);
 
         ReportStatus beforeAi = savedReport.getReportStatus();
 
         AiAssessment aiAssessment = aiAssessmentService.assessReport(savedReport, request, photo);
 
+        savedReport.setAiAssessment(aiAssessment);
         hazardReportUtil.updateReportWithAiAssessment(savedReport, aiAssessment);
 
         savedReport.setPriorityScore(aiAssessment.getAiPriorityScore());
@@ -142,7 +144,7 @@ public class HazardReportServiceImplementation implements HazardReportService {
     public List<HazardReportResponseDto> getReportsByStatus(ReportStatus status) {
         List<HazardReport> reports = hazardReportRepository.findByReportStatus(status);
         List<HazardReportResponseDto> response = reports.stream()
-                .map(report -> modelMapper.map(reports, HazardReportResponseDto.class))
+                .map(report -> modelMapper.map(report, HazardReportResponseDto.class))
                 .toList();
         return response;
     }
