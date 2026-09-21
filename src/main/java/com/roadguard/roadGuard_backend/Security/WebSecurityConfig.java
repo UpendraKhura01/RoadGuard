@@ -17,7 +17,8 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity){
         httpSecurity.csrf(csrfConfigurer -> csrfConfigurer.disable())
                 .authorizeHttpRequests(
-                        auth -> auth.requestMatchers("/").permitAll()
+                        auth -> auth
+                                .requestMatchers("/").permitAll()
                                 .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

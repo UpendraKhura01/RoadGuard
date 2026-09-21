@@ -11,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
 
@@ -19,6 +20,7 @@ import java.io.IOException;
 public class JwtAuthFilter extends OncePerRequestFilter {
     private final AuthUtil authUtil;
     private final UserRepository userRepository;
+    private final HandlerExceptionResolver handlerExceptionResolver;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -41,7 +43,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         }
         catch (Exception exception){
-            throw new RuntimeException("FilterChain Exception" + exception.getMessage());
+            handlerExceptionResolver.resolveException(request, response, null, exception);
         }
     }
 }
