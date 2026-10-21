@@ -1,18 +1,10 @@
 package com.roadguard.roadGuard_backend.Service.Implementation;
 
-import com.roadguard.roadGuard_backend.Repository.AdminReviewRepository;
-import com.roadguard.roadGuard_backend.Repository.HazardReportRepository;
-import com.roadguard.roadGuard_backend.Repository.StatusHistoryRepository;
-import com.roadguard.roadGuard_backend.Repository.UserRepository;
+import com.roadguard.roadGuard_backend.Repository.*;
 import com.roadguard.roadGuard_backend.Service.AdminService;
 import com.roadguard.roadGuard_backend.Service.NotificationService;
-import com.roadguard.roadGuard_backend.dto.AdminReviewRequestDto;
-import com.roadguard.roadGuard_backend.dto.AdminReviewResponseDto;
-import com.roadguard.roadGuard_backend.dto.UpdateReportStatusRequestDto;
-import com.roadguard.roadGuard_backend.entity.AdminReview;
-import com.roadguard.roadGuard_backend.entity.HazardReport;
-import com.roadguard.roadGuard_backend.entity.StatusHistory;
-import com.roadguard.roadGuard_backend.entity.User;
+import com.roadguard.roadGuard_backend.dto.*;
+import com.roadguard.roadGuard_backend.entity.*;
 import com.roadguard.roadGuard_backend.entity.types.NotificationType;
 import com.roadguard.roadGuard_backend.entity.types.ReportStatus;
 import com.roadguard.roadGuard_backend.entity.types.ReviewDecision;
@@ -23,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +26,7 @@ public class AdminServiceImplementation implements AdminService {
     private final NotificationService notificationService;
     private final ModelMapper modelMapper;
     private final UserRepository userRepository;
-
+    private final ContractorRepository contractorRepository;
     @Transactional
     @Override
     public AdminReviewResponseDto reviewReport(Long reportId, AdminReviewRequestDto request, Authentication authentication) {
@@ -88,6 +81,45 @@ public class AdminServiceImplementation implements AdminService {
                 "Report Status Updated",
                 "The status of your report has been updated to " + updates.getNewStatus(),
                 NotificationType.REPORT_STATUS_UPDATED);
+    }
+
+    @Override
+    public CreateContractorResponseDto createContractor(CreateContractorRequestDto request) {
+
+       Contractor contractor = contractorRepository.findByPhoneNumber(request.getPhoneNumber());
+       if(contractor != null){
+           throw new IllegalArgumentException("Contractor already exists with that phone number");
+       }
+        contractor = Contractor.builder()
+                .area(request.getArea())
+                .name(request.getName())
+                .phoneNumber(request.getPhoneNumber())
+                .specialization(request.getSpecialization())
+                .build();
+        Contractor saved = contractorRepository.save(contractor);
+        CreateContractorResponseDto responseDto = new CreateContractorResponseDto();
+        modelMapper.map(saved, responseDto);
+
+        responseDto.setId(saved.getId());
+
+        return responseDto;
+    }
+
+    @Override
+    public void assignContractor(AssignContractorDto request) {
+        Contractor contractor = contractorRepository.findById(request.getContractorId()).orElseThrow();
+        HazardReport report = hazardReportRepository.findById(request.getReportId()).orElseThrow();
+
+        report.setContractor(contractor);
+        hazardReportRepository.save(report);
+    }
+
+    @Override
+    public List<ContractorResponseDto> getAllContractors() {
+        List<Contractor> contractors = contractorRepository.findAll();
+        return contractors.stream()
+                .map(contractor -> modelMapper.map(contractor, ContractorResponseDto.class))
+                .toList();
     }
 
     @Transactional

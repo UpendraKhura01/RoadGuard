@@ -6,7 +6,6 @@ roadguard:
     secret: ***REMOVED***
 spring.security:
   oauth2.client:
-
     registration:
       google:
         client-id: ***REMOVED***

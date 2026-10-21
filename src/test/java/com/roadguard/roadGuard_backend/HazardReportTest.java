@@ -1,6 +1,7 @@
 package com.roadguard.roadGuard_backend;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roadguard.roadGuard_backend.Repository.UserRepository;
 import com.roadguard.roadGuard_backend.Service.HazardReportService;
 import com.roadguard.roadGuard_backend.dto.CreateHazardRequestDto;
@@ -17,6 +18,7 @@ import org.springframework.mock.web.MockMultipartFile;
 
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @SpringBootTest
 public class HazardReportTest {
@@ -66,4 +68,14 @@ public class HazardReportTest {
         HazardReportResponseDto response = hazardReportService.createReport(user.getId(), request, photo);
         System.out.println(response);
     }
+
+    @Test
+    public void testGetAllReports(){
+        List<HazardReportResponseDto> response = hazardReportService.getAllReports();
+        ObjectMapper mapper = new ObjectMapper();
+        System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(response).thr);
+    }
+
+
+
 }

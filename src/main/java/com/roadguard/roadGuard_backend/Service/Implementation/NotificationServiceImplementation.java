@@ -64,7 +64,7 @@ public class NotificationServiceImplementation implements NotificationService {
     @Override
     public @Nullable List<NotificationResponseDto> getNotifications(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
-        List<Notification> notifications = notificationRepository.findByUser();
+        List<Notification> notifications = notificationRepository.findByUser(user);
         return notifications.stream()
                 .map(notification -> modelMapper.map(notification, NotificationResponseDto.class))
                 .toList();

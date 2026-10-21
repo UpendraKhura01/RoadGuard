@@ -23,10 +23,6 @@ public class AiAssessment {
 
     private String provider;
 
-    @OneToOne
-    @JoinColumn(name = "report_id", nullable = false)
-    private HazardReport hazardReport;
-
     @Enumerated(EnumType.STRING)
     private HazardCategory hazardCategory;
 

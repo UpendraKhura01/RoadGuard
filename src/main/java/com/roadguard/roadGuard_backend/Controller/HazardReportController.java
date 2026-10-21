@@ -14,6 +14,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,7 +23,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/citizen/report")
+@EnableMethodSecurity
+@RequestMapping("/citizen")
 @RequiredArgsConstructor
 public class HazardReportController {
     private final HazardReportService hazardReportService;
@@ -42,6 +45,7 @@ public class HazardReportController {
     }
 
     @GetMapping("/getReportById")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHORITY')")
     public ResponseEntity<HazardReportResponseDto> getReportById(@RequestParam Long id){
         HazardReportResponseDto response = hazardReportService.getReportById(id);
 
@@ -55,9 +59,33 @@ public class HazardReportController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/verifiedReports")
     public ResponseEntity<List<HazardReportResponseDto>> getVerifiedReports(Authentication authentication){
         List<HazardReportResponseDto> verifiedReports = hazardReportService.getVerifiedReports(authentication);
         return ResponseEntity.ok(verifiedReports);
     }
+
+    @GetMapping("/nearbyReports")
+    public ResponseEntity<List<HazardReportResponseDto>> getNearByReports(Authentication authentication){
+        List<HazardReportResponseDto> response = hazardReportService.getNearbyReports(authentication);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/cityReports")
+    public ResponseEntity<List<HazardReportResponseDto>> getCityReports(Authentication authentication){
+        List<HazardReportResponseDto> response = hazardReportService.getCityReports(authentication);
+        return ResponseEntity.ok(response);
+    }
+
+
+    @GetMapping("/DistrictReports")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHORITY')")
+    public ResponseEntity<List<HazardReportResponseDto>> getDistrictReports(Authentication authentication){
+        List<HazardReportResponseDto> response = hazardReportService.getDistrictReports(authentication);
+        return ResponseEntity.ok(response);
+    }
+
+
+
 
 }

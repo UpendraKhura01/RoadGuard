@@ -1,15 +1,19 @@
 package com.roadguard.roadGuard_backend.Service.Implementation;
 
+import com.roadguard.roadGuard_backend.Repository.StatusHistoryRepository;
 import com.roadguard.roadGuard_backend.entity.AiAssessment;
 import com.roadguard.roadGuard_backend.entity.HazardReport;
 import com.roadguard.roadGuard_backend.entity.StatusHistory;
 import com.roadguard.roadGuard_backend.entity.User;
 import com.roadguard.roadGuard_backend.entity.types.FakeLikeliHood;
 import com.roadguard.roadGuard_backend.entity.types.ReportStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class HazardReportUtil {
+    private final StatusHistoryRepository statusHistoryRepository;
 
     public void updateReportWithAiAssessment(HazardReport report, AiAssessment aiAssessment) {
         report.setAiSeverity(aiAssessment.getSeverity());
@@ -43,6 +47,8 @@ public class HazardReportUtil {
                 .changedBy(user)
                 .notes(explanation)
                 .build();
+        statusHistoryRepository.save(statusHistory);
+
     }
 
 }

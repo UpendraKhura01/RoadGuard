@@ -3,6 +3,8 @@ package com.roadguard.roadGuard_backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Builder
 @AllArgsConstructor
@@ -28,5 +30,5 @@ public class Contractor {
     private String specialization;
 
     @OneToMany(mappedBy = "contractor")
-    private HazardReport report;
+    private List<HazardReport> reports;
 }

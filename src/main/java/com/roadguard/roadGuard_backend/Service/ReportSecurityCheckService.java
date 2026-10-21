@@ -12,7 +12,6 @@ public class ReportSecurityCheckService {
     public ReportSecurityCheck createSecurityCheck(HazardReport hazardReport,
                                                    CreateHazardRequestDto createHazardRequestDto){
         return ReportSecurityCheck.builder()
-                .hazardReport(hazardReport)
                 .cameraOnly(createHazardRequestDto.getCameraOnly())
                 .fakeLocation(createHazardRequestDto.getFakeLocation())
                 .vpnDetected(createHazardRequestDto.getVpnDetected())
@@ -55,7 +54,6 @@ public class ReportSecurityCheckService {
 
     public ReportSecurityCheck buildSecurityCheck(HazardReport hazardReport, CreateHazardRequestDto request) {
         return ReportSecurityCheck.builder()
-                .hazardReport(hazardReport)
                 .cameraOnly(Boolean.TRUE.equals(request.getCameraOnly()))
                 .decisionReason(buildDecisionRequest(request))
                 .fakeLocation(Boolean.TRUE.equals(request.getFakeLocation()))

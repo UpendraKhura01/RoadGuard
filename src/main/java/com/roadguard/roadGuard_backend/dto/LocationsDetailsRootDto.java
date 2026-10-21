@@ -12,12 +12,12 @@ import lombok.NoArgsConstructor;
 public class LocationsDetailsRootDto {
 
     public String road;
-    public String town;
+    public String village;
     public String county;
     public String state_district;
     public String state;
     public String postcode;
     public String country;
-    public String country_code;
+    public String displayName;
 
 }

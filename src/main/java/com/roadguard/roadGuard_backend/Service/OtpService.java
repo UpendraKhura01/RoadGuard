@@ -8,3 +8,4 @@ public interface OtpService {
     String generateOtp(String number);
     void verifyOtp(String otp, String phoneNumber);
 }
+// TODO implement the otp service

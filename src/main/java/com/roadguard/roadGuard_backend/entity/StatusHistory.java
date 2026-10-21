@@ -18,7 +18,7 @@ public class StatusHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hazard_report_id", nullable = false)
     private HazardReport hazardReport;
 
@@ -28,7 +28,7 @@ public class StatusHistory {
     @Enumerated(EnumType.STRING)
     private ReportStatus newStatus;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private User changedBy;
 
     private String notes;

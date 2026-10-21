@@ -1,5 +1,6 @@
 package com.roadguard.roadGuard_backend.Service;
 
+import com.cloudinary.Cloudinary;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -16,15 +17,17 @@ import java.util.Locale;
 import java.util.UUID;
 
 @Service
-
-public class ImageStoringService {
+@RequiredArgsConstructor
+public class ImageStoringServiceImplementation {
 
     @Value("${roadguard.upload-dir:uploads/reports}")
     private final Path uploadPath;
 
-    public ImageStoringService(@Value("${roadguard.upload-dir:uploads/reports}") String uploadDir) {
-        this.uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-    }
+    private final Cloudinary cloudinary;
+
+//    public ImageStoringServiceImplementation(@Value("${roadguard.upload-dir:uploads/reports}") String uploadDir) {
+//        this.uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+//    }
 
 
     public String storeReportImage(MultipartFile photo){
@@ -71,3 +74,4 @@ public class ImageStoringService {
     }
 
 }
+// TODO implement the image storage service

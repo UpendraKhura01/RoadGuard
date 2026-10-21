@@ -3,10 +3,7 @@ package com.roadguard.roadGuard_backend.dto;
 import com.roadguard.roadGuard_backend.entity.types.HazardCategory;
 import com.roadguard.roadGuard_backend.entity.types.ReportStatus;
 import com.roadguard.roadGuard_backend.entity.types.Severity;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -14,6 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 public class HazardReportResponseDto {
 
     private Long reportId;

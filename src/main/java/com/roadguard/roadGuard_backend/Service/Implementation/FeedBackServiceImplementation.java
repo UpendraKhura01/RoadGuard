@@ -1,0 +1,44 @@
+package com.roadguard.roadGuard_backend.Service.Implementation;
+
+import com.roadguard.roadGuard_backend.Repository.HazardReportRepository;
+import com.roadguard.roadGuard_backend.dto.FeedBackRequestDto;
+import com.roadguard.roadGuard_backend.Repository.FeedBackRepository;
+import com.roadguard.roadGuard_backend.Service.FeedBackService;
+import com.roadguard.roadGuard_backend.entity.FeedBack;
+import com.roadguard.roadGuard_backend.entity.HazardReport;
+import com.roadguard.roadGuard_backend.entity.types.ReportStatus;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class FeedBackServiceImplementation implements FeedBackService {
+    private final FeedBackRepository feedBackRepository;
+    private final HazardReportRepository hazardReportRepository;
+
+    @Override
+    @Transactional
+    public void saveFeedBack(FeedBackRequestDto request, Authentication authentication) {
+        FeedBack feedBack = FeedBack.builder()
+                .feedback(request.getFeedback())
+                .rating(request.getRating())
+                .build();
+        feedBackRepository.save(feedBack);
+        HazardReport report = hazardReportRepository.findById(request.getReportId()).orElse(null);
+        if(report == null){
+            throw new RuntimeException("Report not found with id " + request.getReportId());
+        }
+        if(report.getReportStatus() != ReportStatus.RESOLVED){
+            throw new IllegalArgumentException("FeedBack can only be given for RESOLVED reports");
+        }
+        if(report.getFeedBack() != null) {
+            throw new RuntimeException("Feedback already given for this report");
+        }
+
+        report.setFeedBack(feedBack);
+        hazardReportRepository.save(report);
+
+    }
+}

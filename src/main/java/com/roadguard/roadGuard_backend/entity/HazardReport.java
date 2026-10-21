@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -20,13 +22,21 @@ public class HazardReport {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(nullable = false)
     private ReportImage reportImage;
+
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn
+    private FeedBack feedBack;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn
+    private Contractor contractor;
 
     private String description;
 
@@ -46,6 +56,9 @@ public class HazardReport {
     @Column(nullable = false)
     private ReportStatus reportStatus = ReportStatus.SUBMITTED;
 
+    @OneToMany(mappedBy = "hazardReport", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<StatusHistory> statusHistoryList = new ArrayList<>();
+
     private Integer priorityScore;
 
     @Column(nullable = false)
@@ -57,14 +70,21 @@ public class HazardReport {
     private Double gpsAccuracyMeters;
 
 
-    private String address;
-    private String city;
+    //Location Details
+    private String road;
     private String ward;
+    private String block;
+    private String district;
+    private String state;
+    private String fullAddress;
+    private String pinCode;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn
     private ReportSecurityCheck reportSecurityCheck;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn
     private AiAssessment aiAssessment;
 
     private LocalDateTime createdAt;
