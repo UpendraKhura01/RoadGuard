@@ -7,11 +7,15 @@ import com.roadguard.roadGuard_backend.entity.User;
 import com.roadguard.roadGuard_backend.entity.types.AuthProvider;
 import com.roadguard.roadGuard_backend.entity.types.Roles;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -90,7 +94,28 @@ public class AuthService {
                 .phoneNumber(number)
                 .name(user.getName())
                 .userId(user.getId())
-                .email(user.getGmail())
+                .email(user.getEmail())
                 .build();
+    }
+
+    public ResponseEntity<?> oAuth2Login(OAuth2AuthenticationToken Authtoken) {
+        OAuth2User oAuth2User = Authtoken.getPrincipal();
+
+        String email = oAuth2User.getAttribute("email");
+        User user = userRepository.findByEmail(email).orElse(null);
+        if(user == null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiMessageResponseDto("No user Exists with that Email"));
+        }
+        String jwtToken = authUtil.generateToken(user);
+        LoginResponseDto response = LoginResponseDto.builder()
+                .email(email)
+                .name(user.getName())
+                .phoneNumber(user.getPhoneNumber())
+                .token(jwtToken)
+                .userId(user.getId())
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 }
