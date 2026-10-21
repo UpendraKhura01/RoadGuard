@@ -2,10 +2,12 @@ package com.roadguard.roadGuard_backend.dto;
 
 import com.roadguard.roadGuard_backend.entity.types.HazardCategory;
 import com.roadguard.roadGuard_backend.entity.types.Severity;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -34,6 +36,9 @@ public class AiAssessmentResponseDto {
     private Boolean needsAdminReview;
 
     private String explanation;
+
+    @Column(columnDefinition = "TEXT")
+    private String rawResponse;
 
     private LocalDateTime createdAt;
 }
