@@ -35,7 +35,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String phoneNumber = authUtil.getPhoneNumber(token);
 
             if (phoneNumber != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                User user = userRepository.findByPhoneNumber(phoneNumber).orElseThrow();
+                User user = userRepository.findByPhoneNumber(phoneNumber).orElseThrow(
+                        () -> new RuntimeException("User not found with that phone number")
+                );
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authToken);

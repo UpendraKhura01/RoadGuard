@@ -16,7 +16,5 @@ public class FeedBackRequestDto {
     @NotBlank(message = "messaged can't be blank")
     private String feedback;
 
-    @NotNull(message = "reportId can't be null")
-    private Long reportId;
     private int rating;
 }

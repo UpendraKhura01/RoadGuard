@@ -7,10 +7,7 @@ import com.roadguard.roadGuard_backend.Repository.UserRepository;
 import com.roadguard.roadGuard_backend.Security.AuthUtil;
 import com.roadguard.roadGuard_backend.Service.*;
 import com.roadguard.roadGuard_backend.Service.AIServices.AiAssessmentService;
-import com.roadguard.roadGuard_backend.dto.CreateHazardRequestDto;
-import com.roadguard.roadGuard_backend.dto.HazardReportResponseDto;
-import com.roadguard.roadGuard_backend.dto.LocationDetailsDto;
-import com.roadguard.roadGuard_backend.dto.ResolveLocationDto;
+import com.roadguard.roadGuard_backend.dto.*;
 import com.roadguard.roadGuard_backend.entity.*;
 import com.roadguard.roadGuard_backend.entity.types.HazardCategory;
 import com.roadguard.roadGuard_backend.entity.types.ImageSource;
@@ -28,7 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HazardReportServiceImplementation implements HazardReportService {
 
-    private final ImageStoringServiceImplementation imageStoringService;
+    private final ImageStoringService imageStoringService;
     private final ReportSecurityCheckService reportSecurityCheckService;
     private final UserRepository userRepository;
     private final ReverseLocationService reverseLocationService;
@@ -42,12 +39,11 @@ public class HazardReportServiceImplementation implements HazardReportService {
     private final AuthUtil authUtil;
 
     @Transactional
-    public HazardReportResponseDto createReport(Long userid,
+    public HazardReportResponseDto createReport(Long userId,
                                                 CreateHazardRequestDto request,
                                                 MultipartFile photo){
-        User user = userRepository.findById(userid)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with user id :" + userid));
 
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found with id " + userId));
         ReportStatus initialStatus = reportSecurityCheckService.decideInitialStatus(request);
 
         ResolveLocationDto req = ResolveLocationDto.builder()
@@ -56,10 +52,11 @@ public class HazardReportServiceImplementation implements HazardReportService {
                 .build();
         LocationDetailsDto locationsDetailsDto = reverseLocationService.resolveLocation(req);
 
-        String imageUrl = imageStoringService.storeReportImage(photo);
+        ImageUploadResponseDto response = imageStoringService.storeReportImage(photo);
         ReportImage image;
         image = ReportImage.builder()
-                .url(imageUrl)
+                .url(response.getUrl())
+                .publicId(response.getPublicId())
                 .imageSource(ImageSource.CAMERA)
                 .contentType(photo.getContentType())
                 .fileSize(photo.getSize())
@@ -111,7 +108,7 @@ public class HazardReportServiceImplementation implements HazardReportService {
         notificationService.CreateReportSubmittedNotification(user, savedReport);
 
         HazardReportResponseDto responseDto = modelMapper.map(savedReport, HazardReportResponseDto.class);
-        responseDto.setImageUrl(imageUrl);
+        responseDto.setImageUrl(response.getUrl());
 
         return responseDto;
     }
@@ -127,8 +124,8 @@ public class HazardReportServiceImplementation implements HazardReportService {
     }
 
     @Override
-    public List<HazardReportResponseDto> getMyReports(Authentication authentication) {
-        User user = authUtil.getAuthenticatedUser(authentication);
+    public List<HazardReportResponseDto> getMyReports(User user) {
+
         List<HazardReport> reports = hazardReportRepository.findByUser(user);
 
         List<HazardReportResponseDto> response = reports.stream()
@@ -139,8 +136,8 @@ public class HazardReportServiceImplementation implements HazardReportService {
     }
 
     @Override
-    public List<HazardReportResponseDto> getVerifiedReports(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+    public List<HazardReportResponseDto> getVerifiedReports(User user) {
+
         List<HazardReport> reports = hazardReportRepository.findByReportStatus(ReportStatus.VERIFIED);
         List<HazardReportResponseDto> response = reports.stream()
                 .map(report -> modelMapper.map(report, HazardReportResponseDto.class))
@@ -167,8 +164,8 @@ public class HazardReportServiceImplementation implements HazardReportService {
     }
 
     @Override
-    public List<HazardReportResponseDto> getNearbyReports(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+    public List<HazardReportResponseDto> getNearbyReports(User user) {
+
 
         if(user.getWard() == null){
             throw new IllegalArgumentException("Location is not set");
@@ -181,8 +178,8 @@ public class HazardReportServiceImplementation implements HazardReportService {
     }
 
     @Override
-    public List<HazardReportResponseDto> getCityReports(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+    public List<HazardReportResponseDto> getCityReports(User user) {
+
 
         if(user.getBlock() == null){
             throw new IllegalArgumentException("Location is not set");
@@ -195,8 +192,7 @@ public class HazardReportServiceImplementation implements HazardReportService {
     }
 
     @Override
-    public List<HazardReportResponseDto> getDistrictReports(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+    public List<HazardReportResponseDto> getDistrictReports(User user) {
 
         if(user.getDistrict() == null){
             throw new IllegalArgumentException("Location is not set");
@@ -209,8 +205,7 @@ public class HazardReportServiceImplementation implements HazardReportService {
     }
 
     @Override
-    public List<HazardReportResponseDto> getStateReports(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+    public List<HazardReportResponseDto> getStateReports(User user) {
 
         if(user.getState() == null){
             throw new IllegalArgumentException("Location is not set");
@@ -221,9 +216,6 @@ public class HazardReportServiceImplementation implements HazardReportService {
                 .map(report -> modelMapper.map(report, HazardReportResponseDto.class))
                 .toList();
     }
-
-
-
 
     private Integer CalculateInitialScore(HazardCategory reportedCategory, ReportStatus initialStatus) {
 

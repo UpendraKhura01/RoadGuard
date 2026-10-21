@@ -3,17 +3,20 @@ package com.roadguard.roadGuard_backend.Service;
 import com.roadguard.roadGuard_backend.dto.UpdatePasswordRequestDto;
 import com.roadguard.roadGuard_backend.dto.UpdateProfileRequestDto;
 import com.roadguard.roadGuard_backend.dto.UserProfileResponseDto;
+import com.roadguard.roadGuard_backend.entity.User;
 import org.springframework.security.core.Authentication;
+
+import java.util.Map;
 
 public interface UserService {
 
     void updatePassword(UpdatePasswordRequestDto request);
 
-    void updateLocation(Authentication authentication, Double longitude, Double latitude);
+    void updateLocation(User user, Double longitude, Double latitude);
 
-     UserProfileResponseDto getProfile(Authentication authentication);
+     UserProfileResponseDto getProfile(Long id);
 
-    void deleteAccount(Authentication authentication);
+    void deleteAccount(Long id);
 
-    void updateProfile(Authentication authentication, UpdateProfileRequestDto request);
+    void updateProfile(Long id, Map<String, Object> request);
 }

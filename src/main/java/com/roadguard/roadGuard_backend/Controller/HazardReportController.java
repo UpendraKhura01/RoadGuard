@@ -30,7 +30,7 @@ public class HazardReportController {
     private final HazardReportService hazardReportService;
     private final AuthUtil authUtil;
 
-    @PostMapping(path = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(path = "/report/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<HazardReportResponseDto> createReport(
             Authentication authentication,
             @Valid @RequestPart("data") CreateHazardRequestDto request,
@@ -44,36 +44,40 @@ public class HazardReportController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/getReportById")
+    @GetMapping("/getReportById/{reportId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHORITY')")
-    public ResponseEntity<HazardReportResponseDto> getReportById(@RequestParam Long id){
-        HazardReportResponseDto response = hazardReportService.getReportById(id);
+    public ResponseEntity<HazardReportResponseDto> getReportById(@PathVariable Long reportId){
+        HazardReportResponseDto response = hazardReportService.getReportById(reportId);
 
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/myReports")
     public ResponseEntity<List<HazardReportResponseDto>> getMyReports(Authentication authentication){
-        List<HazardReportResponseDto> response = hazardReportService.getMyReports(authentication);
+        User user = (User)authentication.getPrincipal();
+        List<HazardReportResponseDto> response = hazardReportService.getMyReports(user);
 
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/verifiedReports")
     public ResponseEntity<List<HazardReportResponseDto>> getVerifiedReports(Authentication authentication){
-        List<HazardReportResponseDto> verifiedReports = hazardReportService.getVerifiedReports(authentication);
+        User user = (User)authentication.getPrincipal();
+        List<HazardReportResponseDto> verifiedReports = hazardReportService.getVerifiedReports(user);
         return ResponseEntity.ok(verifiedReports);
     }
 
     @GetMapping("/nearbyReports")
     public ResponseEntity<List<HazardReportResponseDto>> getNearByReports(Authentication authentication){
-        List<HazardReportResponseDto> response = hazardReportService.getNearbyReports(authentication);
+        User user = (User)authentication.getPrincipal();
+        List<HazardReportResponseDto> response = hazardReportService.getNearbyReports(user);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/cityReports")
     public ResponseEntity<List<HazardReportResponseDto>> getCityReports(Authentication authentication){
-        List<HazardReportResponseDto> response = hazardReportService.getCityReports(authentication);
+        User user = (User)authentication.getPrincipal();
+        List<HazardReportResponseDto> response = hazardReportService.getCityReports(user);
         return ResponseEntity.ok(response);
     }
 
@@ -81,7 +85,8 @@ public class HazardReportController {
     @GetMapping("/DistrictReports")
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHORITY')")
     public ResponseEntity<List<HazardReportResponseDto>> getDistrictReports(Authentication authentication){
-        List<HazardReportResponseDto> response = hazardReportService.getDistrictReports(authentication);
+        User user = (User)authentication.getPrincipal();
+        List<HazardReportResponseDto> response = hazardReportService.getDistrictReports(user);
         return ResponseEntity.ok(response);
     }
 

@@ -39,7 +39,9 @@ public class WebSecurityConfig {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2 -> oauth2.failureHandler(
                         (request, response, exception) -> {
-                            throw new RuntimeException();
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"error\": \"OAuth2 authentication failed: " + exception.getMessage() + "\"}");
                         }
                 ).successHandler(oAuth2SuccessHandler))
 

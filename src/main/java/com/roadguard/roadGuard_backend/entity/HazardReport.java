@@ -54,7 +54,7 @@ public class HazardReport {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ReportStatus reportStatus = ReportStatus.SUBMITTED;
+    private ReportStatus reportStatus;
 
     @OneToMany(mappedBy = "hazardReport", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StatusHistory> statusHistoryList = new ArrayList<>();

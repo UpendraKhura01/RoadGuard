@@ -1,6 +1,7 @@
 package com.roadguard.roadGuard_backend;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roadguard.roadGuard_backend.Repository.UserRepository;
 import com.roadguard.roadGuard_backend.Service.HazardReportService;
@@ -50,7 +51,7 @@ public class HazardReportTest {
 
         User user = User.builder()
                 .name("Upendra")
-                .gmail("demo@gmail.com")
+                .email("demo@gmail.com")
                 .phoneNumber("7684081234")
                 .isVerified(true)
                 .roles(Roles.CITIZEN)
@@ -70,10 +71,10 @@ public class HazardReportTest {
     }
 
     @Test
-    public void testGetAllReports(){
+    public void testGetAllReports() throws JsonProcessingException {
         List<HazardReportResponseDto> response = hazardReportService.getAllReports();
         ObjectMapper mapper = new ObjectMapper();
-        System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(response).thr);
+        System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(response));
     }
 
 

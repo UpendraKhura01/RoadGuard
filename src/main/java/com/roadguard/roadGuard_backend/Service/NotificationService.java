@@ -16,7 +16,7 @@ public interface NotificationService {
 
     Notification CreateReportSubmittedNotification(User user, HazardReport report);
 
-    @Nullable List<NotificationResponseDto> getNotifications(Authentication authentication);
+     List<NotificationResponseDto> getNotifications(Authentication authentication);
 
-    @Nullable NotificationResponseDto markAsRead(Authentication authentication, Long notificationId);
+     NotificationResponseDto markAsRead(Authentication authentication, Long notificationId);
 }

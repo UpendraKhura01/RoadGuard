@@ -1,5 +1,6 @@
 package com.roadguard.roadGuard_backend.Service.Implementation;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roadguard.roadGuard_backend.Repository.UserRepository;
 import com.roadguard.roadGuard_backend.Service.OtpService;
 import com.roadguard.roadGuard_backend.Service.ReverseLocationService;
@@ -14,6 +15,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImplementation implements UserService {
@@ -23,6 +26,7 @@ public class UserServiceImplementation implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final ReverseLocationService reverseLocationService;
     private final ModelMapper modelMapper;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional
@@ -44,8 +48,7 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     @Transactional
-    public void updateLocation(Authentication authentication, Double longitude, Double latitude) {
-        User user = (User) authentication.getPrincipal();
+    public void updateLocation(User user, Double longitude, Double latitude) {
 
         user.setLongitude(longitude);
         user.setLatitude(latitude);
@@ -62,8 +65,13 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public UserProfileResponseDto getProfile(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+    @Transactional
+    public UserProfileResponseDto getProfile(Long id) {
+
+        User user = userRepository.findById(id).orElse(null);
+        if(user == null){
+            throw new BadCredentialsException("User does not exist with that id:");
+        }
         UserProfileResponseDto response = modelMapper.map(user, UserProfileResponseDto.class);
         response.setAddress(user.getFullAddress());
 
@@ -71,30 +79,26 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public void deleteAccount(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+    @Transactional
+    public void deleteAccount(Long id) {
+        User user = userRepository.findById(id).orElse(null);
+        if(user == null){
+            throw new BadCredentialsException("User does not exist with that id:");
+        }
         userRepository.delete(user);
     }
 
     @Override
-    public void updateProfile(Authentication authentication, UpdateProfileRequestDto request) {
-        User user = (User) authentication.getPrincipal();
-        assert user != null;
-
-        if(request.getName() != null && !request.getName().isEmpty()){
-            user.setName(request.getName());
+    @Transactional
+    public void updateProfile(Long id, Map<String, Object> updates) {
+        User user = userRepository.findById(id).orElse(null);
+        if(user == null){
+            throw new BadCredentialsException("User does not exist with that id:");
         }
-        if(request.getEmail() != null && !request.getEmail().isEmpty()){
-            user.setEmail(request.getEmail());
-        }
-        if(request.getPhoneNumber() != null && !request.getPhoneNumber().isEmpty()){
-            if (request.getOtp() == null || request.getOtp().isEmpty()) {
-                throw new BadCredentialsException("OTP is required to update phone number");
-            }
-            otpService.verifyOtp(request.getOtp(), request.getPhoneNumber());
-            user.setPhoneNumber(request.getPhoneNumber());
-
-        }
+        User updatedUser = objectMapper.convertValue(updates, User.class);
+        modelMapper.map(updatedUser, user);
         userRepository.save(user);
     }
+
+
 }

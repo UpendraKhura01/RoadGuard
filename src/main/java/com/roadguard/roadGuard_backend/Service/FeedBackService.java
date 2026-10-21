@@ -1,8 +1,8 @@
 package com.roadguard.roadGuard_backend.Service;
 
 import com.roadguard.roadGuard_backend.dto.FeedBackRequestDto;
-import org.springframework.security.core.Authentication;
+import com.roadguard.roadGuard_backend.entity.User;
 
 public interface FeedBackService {
-    void saveFeedBack(FeedBackRequestDto feedBack, Authentication authentication);
+    void saveFeedBack(FeedBackRequestDto feedBack, Long id, Long reportId);
 }

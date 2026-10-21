@@ -3,6 +3,7 @@ package com.roadguard.roadGuard_backend.Service;
 import com.roadguard.roadGuard_backend.dto.CreateHazardRequestDto;
 import com.roadguard.roadGuard_backend.dto.HazardReportResponseDto;
 import com.roadguard.roadGuard_backend.entity.HazardReport;
+import com.roadguard.roadGuard_backend.entity.User;
 import com.roadguard.roadGuard_backend.entity.types.ReportStatus;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.Authentication;
@@ -19,19 +20,19 @@ public interface HazardReportService {
 
     HazardReportResponseDto getReportById(Long id);
 
-    List<HazardReportResponseDto> getMyReports(Authentication authentication);
+    List<HazardReportResponseDto> getMyReports(User user);
 
-    List<HazardReportResponseDto> getVerifiedReports(Authentication authentication);
+    List<HazardReportResponseDto> getVerifiedReports(User user);
 
     List<HazardReportResponseDto> getReportsByStatus(ReportStatus status);
 
     List<HazardReportResponseDto> getAllReports();
 
-    List<HazardReportResponseDto> getNearbyReports(Authentication authentication);
+    List<HazardReportResponseDto> getNearbyReports(User user);
 
-    List<HazardReportResponseDto> getCityReports(Authentication authentication);
+    List<HazardReportResponseDto> getCityReports(User user);
 
-    List<HazardReportResponseDto> getDistrictReports(Authentication authentication);
+    List<HazardReportResponseDto> getDistrictReports(User user);
 
-    List<HazardReportResponseDto> getStateReports(Authentication authentication);
+    List<HazardReportResponseDto> getStateReports(User user);
 }

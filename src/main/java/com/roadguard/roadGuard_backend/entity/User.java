@@ -56,7 +56,7 @@ public class User implements UserDetails {
     private AuthProvider authProvider;
 
     @Enumerated(EnumType.STRING)
-    private Roles roles;
+    private Roles roles = Roles.CITIZEN;
 
     @Column(nullable = false)
     private Boolean isVerified = false;

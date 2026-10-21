@@ -27,17 +27,17 @@ public class AdminController {
         return ResponseEntity.ok(reports);
     }
 
-    @PostMapping("/reviewReport")
-    public ResponseEntity<AdminReviewResponseDto> reviewReport(@RequestParam Long reportId,
+    @PostMapping("/reviewReport/{reportId}")
+    public ResponseEntity<AdminReviewResponseDto> reviewReport(@PathVariable Long reportId,
                                                                    @RequestBody AdminReviewRequestDto adminReviewRequestDto,
                                                                    Authentication authentication){
         AdminReviewResponseDto response = adminService.reviewReport(reportId, adminReviewRequestDto, authentication);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/updateReportStatus")
+    @PostMapping("/updateReportStatus/{reportId}")
     public ResponseEntity<ApiMessageResponseDto> updateReport(Authentication authentication,
-                                                              @RequestParam Long reportId,
+                                                              @PathVariable Long reportId,
                                                               @RequestBody UpdateReportStatusRequestDto updates){
         User admin = (User) authentication.getPrincipal();
         Long adminId = admin.getId();
@@ -75,7 +75,8 @@ public class AdminController {
     @GetMapping("/StateReports")
     public ResponseEntity<List<HazardReportResponseDto>> getStateReports(Authentication authentication){
 
-        return ResponseEntity.ok(hazardReportService.getStateReports(authentication));
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(hazardReportService.getStateReports(user));
     }
 
 }

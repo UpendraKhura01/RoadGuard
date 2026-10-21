@@ -20,8 +20,8 @@ public class NotificationController {
     public ResponseEntity<List<NotificationResponseDto>> getNotifications(Authentication authentication) {
         return ResponseEntity.ok(notificationService.getNotifications(authentication));
     }
-    @PostMapping("/markAsRead")
-    public ResponseEntity<NotificationResponseDto> markAsRead(Authentication authentication, @RequestParam Long notificationId) {
+    @PostMapping("/markAsRead/{notificationId}")
+    public ResponseEntity<NotificationResponseDto> markAsRead(Authentication authentication, @PathVariable Long notificationId) {
         return ResponseEntity.ok(notificationService.markAsRead(authentication, notificationId));
     }
 }

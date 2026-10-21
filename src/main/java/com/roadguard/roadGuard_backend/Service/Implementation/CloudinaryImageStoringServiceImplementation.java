@@ -1,9 +1,12 @@
-package com.roadguard.roadGuard_backend.Service;
+package com.roadguard.roadGuard_backend.Service.Implementation;
 
 import com.cloudinary.Cloudinary;
+import com.roadguard.roadGuard_backend.Service.ImageStoringService;
+import com.roadguard.roadGuard_backend.dto.ImageUploadResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -11,42 +14,50 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Collections;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class ImageStoringServiceImplementation {
-
-    @Value("${roadguard.upload-dir:uploads/reports}")
-    private final Path uploadPath;
+public class CloudinaryImageStoringServiceImplementation implements ImageStoringService {
 
     private final Cloudinary cloudinary;
 
-//    public ImageStoringServiceImplementation(@Value("${roadguard.upload-dir:uploads/reports}") String uploadDir) {
-//        this.uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-//    }
 
 
-    public String storeReportImage(MultipartFile photo){
+    public ImageUploadResponseDto storeReportImage(MultipartFile photo){
         validatePhoto(photo);
         try {
-            Files.createDirectories(uploadPath);
+            String publicId = UUID.randomUUID().toString();
 
-            String extension = getExtension(photo.getOriginalFilename());
-            String fileName = UUID.randomUUID() + extension;
-            Path destination = uploadPath.resolve(fileName).normalize();
+            Map data = cloudinary.uploader().upload(
+                    photo.getBytes(),
+                    Map.of(
+                            "public_id", publicId,
+                            "folder", "roadGuard/reportImage",
+                            "resource_type", "auto"
+                    ));
+            String url = (String) data.get("secure_url");
 
-                try (InputStream inputStream = photo.getInputStream()){
-                    Files.copy(inputStream, destination, StandardCopyOption.REPLACE_EXISTING);
-                }
-
-            return "/uploads/reports/" + fileName;
+            return ImageUploadResponseDto.builder()
+                    .url(url)
+                    .publicId(publicId)
+                    .build();
         }
         catch (IOException exception){
             throw new RuntimeException("Couldn't Store uploaded image", exception);
+        }
+    }
+
+    @Override
+    public void deleteReportImage(String publicId) {
+        try {
+            cloudinary.uploader().destroy(publicId, Collections.emptyMap());
+        } catch (IOException e) {
+            throw new RuntimeException("error in deleting the photo " + e);
         }
     }
 
@@ -74,4 +85,3 @@ public class ImageStoringServiceImplementation {
     }
 
 }
-// TODO implement the image storage service
