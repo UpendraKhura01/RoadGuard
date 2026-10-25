@@ -3,6 +3,7 @@ package com.roadguard.roadGuard_backend.Controller;
 import com.roadguard.roadGuard_backend.Repository.HazardReportRepository;
 import com.roadguard.roadGuard_backend.Security.AuthUtil;
 import com.roadguard.roadGuard_backend.Service.HazardReportService;
+import com.roadguard.roadGuard_backend.Service.ImageValidationService;
 import com.roadguard.roadGuard_backend.dto.CreateHazardRequestDto;
 import com.roadguard.roadGuard_backend.dto.HazardReportResponseDto;
 import com.roadguard.roadGuard_backend.entity.HazardReport;
@@ -29,12 +30,16 @@ import java.util.List;
 public class HazardReportController {
     private final HazardReportService hazardReportService;
     private final AuthUtil authUtil;
+    private final ImageValidationService imageValidationService;
 
     @PostMapping(path = "/report/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<HazardReportResponseDto> createReport(
             Authentication authentication,
             @Valid @RequestPart("data") CreateHazardRequestDto request,
             @RequestPart("photo") MultipartFile photo){
+
+        imageValidationService.validateImage(photo);
+
         if(photo == null || photo.isEmpty()){
             throw new IllegalArgumentException("Photo is mandatory:");
         }
