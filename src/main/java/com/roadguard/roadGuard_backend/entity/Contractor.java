@@ -1,6 +1,7 @@
 package com.roadguard.roadGuard_backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import lombok.*;
 
 import java.util.List;
@@ -22,6 +23,9 @@ public class Contractor {
 
     @Column(unique = true, nullable = false)
     private String phoneNumber;
+
+    @Email
+    private String email;
 
     @Column(nullable = false)
     private String area;

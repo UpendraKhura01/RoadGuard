@@ -27,6 +27,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(
                         auth -> auth
                                 .requestMatchers("/auth/**").permitAll()
+                                .requestMatchers("/roadInfo/**").permitAll()
                                 .requestMatchers("/admin/**").hasAnyRole("ADMIN", "AUTHORITY")
                                 .requestMatchers("/user/**").authenticated()
                                 .requestMatchers("/notification/**").authenticated()
