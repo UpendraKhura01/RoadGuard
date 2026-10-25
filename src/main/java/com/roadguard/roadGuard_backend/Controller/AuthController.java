@@ -21,7 +21,7 @@ public class AuthController {
     private final OtpService otpService;
 
     @PostMapping("/sendOtp")
-    public ResponseEntity<OtpResponse> sendOtp(@RequestBody OtpRequestDto requestDto) {
+    public ResponseEntity<OtpResponse> sendOtp(@RequestBody @Valid OtpRequestDto requestDto) {
         OtpResponse otpResponse = otpService.sendOtp(requestDto.getPhoneNumber());
         return ResponseEntity.ok(otpResponse);
     }
@@ -32,13 +32,13 @@ public class AuthController {
     }
 
     @PostMapping("/login/phoneNumber")
-    public ResponseEntity<LoginResponseDto> otpLogin(@RequestBody OtpLoginRequestDto request){
+    public ResponseEntity<LoginResponseDto> otpLogin(@RequestBody @Valid OtpLoginRequestDto request){
         LoginResponseDto response = authService.loginPhoneNumber(request);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login/password")
-    public ResponseEntity<LoginResponseDto> passwordLogin(@RequestBody passwordLoginRequestDto request){
+    public ResponseEntity<LoginResponseDto> passwordLogin(@RequestBody @Valid passwordLoginRequestDto request){
         LoginResponseDto response = authService.passwordLogin(request);
         return ResponseEntity.ok(response);
     }

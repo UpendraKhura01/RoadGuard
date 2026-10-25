@@ -14,7 +14,7 @@ public class UserProfileResponseDto {
 
     private String phoneNumber;
 
-    private Roles role;
+    private Roles roles;
 
     private String reputationScore;
 

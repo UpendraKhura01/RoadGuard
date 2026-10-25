@@ -13,6 +13,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -74,6 +75,7 @@ public class AuthService {
                 .name(user.getName())
                 .phoneNumber(user.getPhoneNumber())
                 .token(token)
+                .message("Login Successful")
                 .build();
     }
 
@@ -83,9 +85,13 @@ public class AuthService {
         if(user == null){
             throw new BadCredentialsException("Number is not registered:" + number);
         }
-        Authentication authentication = authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(request.getPhoneNumber(), request.getPassword()));
-        user = (User) authentication.getPrincipal();
+        try {
+            Authentication authentication = authenticationManager
+                    .authenticate(new UsernamePasswordAuthenticationToken(request.getPhoneNumber(), request.getPassword()));
+            user = (User) authentication.getPrincipal();
+        } catch (BadCredentialsException e) {
+            throw new BadCredentialsException("Wrong password");
+        }
 
         String token = authUtil.generateToken(user);
 
@@ -95,6 +101,8 @@ public class AuthService {
                 .name(user.getName())
                 .userId(user.getId())
                 .email(user.getEmail())
+                .role(user.getRoles())
+                .message("Login Successful")
                 .build();
     }
 
@@ -114,6 +122,7 @@ public class AuthService {
                 .phoneNumber(user.getPhoneNumber())
                 .token(jwtToken)
                 .userId(user.getId())
+                .role(user.getRoles())
                 .build();
 
         return ResponseEntity.ok(response);

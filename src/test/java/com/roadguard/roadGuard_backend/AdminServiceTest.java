@@ -47,4 +47,9 @@ public class AdminServiceTest {
         adminService.assignContractor(request);
         System.out.println("assigned");
     }
+    @Test
+    public void testGetAnalytics() {
+        AnalyticsResponseDto responseDto = adminService.getAnalytics();
+        System.out.println(responseDto);
+    }
 }

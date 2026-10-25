@@ -4,7 +4,7 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
 public class PhoneNumberValidator implements ConstraintValidator<PhoneNumber, String> {
-    private static final String REGEX = "^[0-9]{10}$";
+    private static final String REGEX = "^[6-9][0-9]{9}$";
 
 
     @Override

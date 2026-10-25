@@ -1,5 +1,6 @@
 package com.roadguard.roadGuard_backend.dto;
 
+import com.roadguard.roadGuard_backend.CustomAnnotation.PhoneNumber;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -10,6 +11,7 @@ import lombok.*;
 public class passwordLoginRequestDto {
 
     @NotNull
+    @PhoneNumber
     private String phoneNumber;
 
     @NotNull

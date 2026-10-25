@@ -6,6 +6,7 @@ import com.roadguard.roadGuard_backend.dto.*;
 import com.roadguard.roadGuard_backend.entity.Contractor;
 import com.roadguard.roadGuard_backend.entity.User;
 import com.roadguard.roadGuard_backend.entity.types.ReportStatus;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -29,7 +30,7 @@ public class AdminController {
 
     @PostMapping("/reviewReport/{reportId}")
     public ResponseEntity<AdminReviewResponseDto> reviewReport(@PathVariable Long reportId,
-                                                                   @RequestBody AdminReviewRequestDto adminReviewRequestDto,
+                                                                   @RequestBody @Valid AdminReviewRequestDto adminReviewRequestDto,
                                                                    Authentication authentication){
         AdminReviewResponseDto response = adminService.reviewReport(reportId, adminReviewRequestDto, authentication);
         return ResponseEntity.ok(response);
@@ -38,7 +39,7 @@ public class AdminController {
     @PostMapping("/updateReportStatus/{reportId}")
     public ResponseEntity<ApiMessageResponseDto> updateReport(Authentication authentication,
                                                               @PathVariable Long reportId,
-                                                              @RequestBody UpdateReportStatusRequestDto updates){
+                                                              @RequestBody @Valid UpdateReportStatusRequestDto updates){
         User admin = (User) authentication.getPrincipal();
         Long adminId = admin.getId();
         adminService.updateReport(adminId, reportId, updates);
@@ -47,7 +48,7 @@ public class AdminController {
     }
 
     @PostMapping("/contractor/create")
-    public ResponseEntity<CreateContractorResponseDto> createContractor(@RequestBody CreateContractorRequestDto request){
+    public ResponseEntity<CreateContractorResponseDto> createContractor(@RequestBody @Valid CreateContractorRequestDto request){
         CreateContractorResponseDto responseDto = adminService.createContractor(request);
 
         return ResponseEntity.ok(responseDto);
@@ -77,6 +78,12 @@ public class AdminController {
 
         User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok(hazardReportService.getStateReports(user));
+    }
+
+    @GetMapping("/analytics")
+    public ResponseEntity<AnalyticsResponseDto> getAnalytics(){
+        AnalyticsResponseDto responseDto = adminService.getAnalytics();
+        return ResponseEntity.ok(responseDto);
     }
 
 }

@@ -1,11 +1,9 @@
 package com.roadguard.roadGuard_backend.Controller;
 
 import com.roadguard.roadGuard_backend.Service.UserService;
-import com.roadguard.roadGuard_backend.dto.ApiMessageResponseDto;
-import com.roadguard.roadGuard_backend.dto.UpdatePasswordRequestDto;
-import com.roadguard.roadGuard_backend.dto.UpdateProfileRequestDto;
-import com.roadguard.roadGuard_backend.dto.UserProfileResponseDto;
+import com.roadguard.roadGuard_backend.dto.*;
 import com.roadguard.roadGuard_backend.entity.User;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -22,7 +20,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/forgotPassword")
-    public ResponseEntity<ApiMessageResponseDto> forgotPassword(UpdatePasswordRequestDto request){
+    public ResponseEntity<ApiMessageResponseDto> forgotPassword(@RequestBody @Valid UpdatePasswordRequestDto request){
         userService.updatePassword(request);
         return ResponseEntity.ok(new ApiMessageResponseDto("Password has been updated"));
     }
@@ -66,4 +64,10 @@ public class UserController {
         return ResponseEntity.ok(new ApiMessageResponseDto("Profile has been updated"));
     }
 
+    @PostMapping("/updatePhoneNumber")
+    public ResponseEntity<ApiMessageResponseDto> updatePhoneNumber(Authentication authentication,@Valid @RequestBody UpdatePhoneNumberRequestDto request){
+        User user = (User) authentication.getPrincipal();
+        userService.updatePhoneNumber(user.getId(), request);
+        return ResponseEntity.ok(new ApiMessageResponseDto("Phone number has been updated"));
+    }
 }

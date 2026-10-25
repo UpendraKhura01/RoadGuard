@@ -1,6 +1,7 @@
 package com.roadguard.roadGuard_backend.dto;
 
 import com.roadguard.roadGuard_backend.entity.types.AuthProvider;
+import com.roadguard.roadGuard_backend.entity.types.Roles;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +20,8 @@ public class LoginResponseDto {
     private String email;
     private String phoneNumber;
 
-    private String role;
+    private Roles role;
+
+    private String message;
 
 }

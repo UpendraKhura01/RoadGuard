@@ -122,6 +122,23 @@ public class AdminServiceImplementation implements AdminService {
                 .toList();
     }
 
+    @Override
+    public AnalyticsResponseDto getAnalytics() {
+        LocalDateTime weekAgo = LocalDateTime.now().minusWeeks(1);
+        LocalDateTime monthAgo = LocalDateTime.now().minusMonths(1);
+
+        return AnalyticsResponseDto.builder()
+                .totalReports(hazardReportRepository.count())
+                .pendingReports(hazardReportRepository.countByReportStatus(ReportStatus.PENDING_REVIEW))
+                .rejectedReports(hazardReportRepository.countByReportStatus(ReportStatus.REJECTED))
+                .verifiedReports(hazardReportRepository.countByReportStatus(ReportStatus.VERIFIED))
+                .totalUsers(userRepository.count())
+                .activeContractors(contractorRepository.count())
+                .reportsThisWeek(hazardReportRepository.countByCreatedAtAfter(weekAgo))
+                .reportsThisMonth(hazardReportRepository.countByCreatedAtAfter(monthAgo))
+                .build();
+    }
+
     @Transactional
     private void createStatusHistory(User admin,
                                      HazardReport report,

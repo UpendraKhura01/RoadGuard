@@ -6,6 +6,7 @@ import com.roadguard.roadGuard_backend.entity.types.ReportStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -22,4 +23,7 @@ public interface HazardReportRepository extends JpaRepository<HazardReport, Long
 
     List<HazardReport> findByState(String state);
 
+    long countByReportStatus(ReportStatus reportStatus);
+
+    long countByCreatedAtAfter(LocalDateTime weekAgo);
 }

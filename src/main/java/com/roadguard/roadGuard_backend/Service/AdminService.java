@@ -16,4 +16,6 @@ public interface AdminService {
     void assignContractor(AssignContractorDto request);
 
     List<ContractorResponseDto> getAllContractors();
+
+    AnalyticsResponseDto getAnalytics();
 }
