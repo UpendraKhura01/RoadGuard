@@ -1,18 +1,13 @@
 package com.roadguard.roadGuard_backend.Controller;
 
-import com.roadguard.roadGuard_backend.Repository.HazardReportRepository;
 import com.roadguard.roadGuard_backend.Security.AuthUtil;
 import com.roadguard.roadGuard_backend.Service.HazardReportService;
 import com.roadguard.roadGuard_backend.Service.ImageValidationService;
 import com.roadguard.roadGuard_backend.dto.CreateHazardRequestDto;
 import com.roadguard.roadGuard_backend.dto.HazardReportResponseDto;
-import com.roadguard.roadGuard_backend.entity.HazardReport;
 import com.roadguard.roadGuard_backend.entity.User;
-import com.roadguard.roadGuard_backend.entity.types.ReportStatus;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

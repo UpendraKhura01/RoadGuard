@@ -1,10 +1,12 @@
 package com.roadguard.roadGuard_backend.Service.Implementation;
 
 import com.roadguard.roadGuard_backend.Service.ImageValidationService;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Service
 public class ImageValidationServiceImplementation implements ImageValidationService {
 
     private static final long MAX_SIZE = 5 * 1024 * 1024; // 5MB

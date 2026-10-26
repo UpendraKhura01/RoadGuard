@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class RoadInfoServiceImplementation implements RoadInfoService {
     private final RoadInformationRepository roadInformationRepository;
     private final ModelMapper modelMapper;
-    public static final Double RADIUS = 0.0005;
+    public static final Double RADIUS = 0.01;
 
     @Override
     public RoadInfoResponseDto getRoadInfo(Double latitude, Double longitude) {
