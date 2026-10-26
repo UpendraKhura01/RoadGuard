@@ -2,7 +2,6 @@ package com.roadguard.roadGuard_backend.Controller;
 
 import com.roadguard.roadGuard_backend.Service.NotificationService;
 import com.roadguard.roadGuard_backend.dto.NotificationResponseDto;
-import com.roadguard.roadGuard_backend.entity.Notification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;

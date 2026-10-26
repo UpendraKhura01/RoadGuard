@@ -3,7 +3,6 @@ package com.roadguard.roadGuard_backend.Controller;
 import com.roadguard.roadGuard_backend.Service.AdminService;
 import com.roadguard.roadGuard_backend.Service.HazardReportService;
 import com.roadguard.roadGuard_backend.dto.*;
-import com.roadguard.roadGuard_backend.entity.Contractor;
 import com.roadguard.roadGuard_backend.entity.User;
 import com.roadguard.roadGuard_backend.entity.types.ReportStatus;
 import jakarta.validation.Valid;

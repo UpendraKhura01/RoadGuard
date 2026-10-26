@@ -5,7 +5,6 @@ import com.roadguard.roadGuard_backend.Repository.UserRepository;
 import com.roadguard.roadGuard_backend.Service.OtpService;
 import com.roadguard.roadGuard_backend.dto.OtpResponse;
 import com.roadguard.roadGuard_backend.entity.Otp;
-import com.roadguard.roadGuard_backend.entity.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;

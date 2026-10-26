@@ -13,7 +13,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -56,6 +55,8 @@ public class AuthService {
                 .userId(user.getId())
                 .username(user.getName())
                 .message("User registered successfully")
+                .token(token)
+                .role(user.getRoles())
                 .build();
 
     }
@@ -75,6 +76,7 @@ public class AuthService {
                 .name(user.getName())
                 .phoneNumber(user.getPhoneNumber())
                 .token(token)
+                .role(user.getRoles())
                 .message("Login Successful")
                 .build();
     }

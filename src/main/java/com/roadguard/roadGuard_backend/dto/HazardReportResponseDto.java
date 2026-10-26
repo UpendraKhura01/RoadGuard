@@ -22,7 +22,6 @@ public class HazardReportResponseDto {
     private HazardCategory reportedCategory;
     private HazardCategory finalCategory;
 
-
     private Severity aiSeverity;
     private Severity finalSeverity;
 

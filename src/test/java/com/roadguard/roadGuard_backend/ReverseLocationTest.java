@@ -1,9 +1,7 @@
 package com.roadguard.roadGuard_backend;
 
 import com.roadguard.roadGuard_backend.Service.ReverseLocationService;
-import com.roadguard.roadGuard_backend.dto.CreateHazardRequestDto;
 import com.roadguard.roadGuard_backend.dto.LocationDetailsDto;
-import com.roadguard.roadGuard_backend.dto.LocationsDetailsRootDto;
 import com.roadguard.roadGuard_backend.dto.ResolveLocationDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

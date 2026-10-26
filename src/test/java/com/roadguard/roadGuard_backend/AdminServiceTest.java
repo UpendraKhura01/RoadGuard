@@ -3,7 +3,6 @@ package com.roadguard.roadGuard_backend;
 import com.roadguard.roadGuard_backend.Repository.ContractorRepository;
 import com.roadguard.roadGuard_backend.Service.AdminService;
 import com.roadguard.roadGuard_backend.dto.*;
-import com.roadguard.roadGuard_backend.entity.Contractor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

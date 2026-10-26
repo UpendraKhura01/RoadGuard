@@ -8,7 +8,6 @@ import com.roadguard.roadGuard_backend.entity.HazardReport;
 import com.roadguard.roadGuard_backend.entity.Notification;
 import com.roadguard.roadGuard_backend.entity.User;
 import com.roadguard.roadGuard_backend.entity.types.NotificationType;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.modelmapper.ModelMapper;

@@ -1,6 +1,5 @@
 package com.roadguard.roadGuard_backend.dto;
 
-import com.roadguard.roadGuard_backend.entity.types.AuthProvider;
 import com.roadguard.roadGuard_backend.entity.types.Roles;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

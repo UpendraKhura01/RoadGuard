@@ -1,8 +1,5 @@
 package com.roadguard.roadGuard_backend.dto;
 
-import com.roadguard.roadGuard_backend.entity.types.FakeLikeliHood;
-import com.roadguard.roadGuard_backend.entity.types.HazardCategory;
-import com.roadguard.roadGuard_backend.entity.types.Severity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

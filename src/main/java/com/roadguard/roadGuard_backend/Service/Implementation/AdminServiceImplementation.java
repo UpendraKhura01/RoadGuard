@@ -12,6 +12,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -55,7 +56,7 @@ public class AdminServiceImplementation implements AdminService {
         AdminReview savedReview = adminReviewRepository.save(review);
 
         createStatusHistory(admin, report,oldStatus, newStatus, request.getComment());
-        notificationService.createNotification(admin,
+        notificationService.createNotification(report.getUser(),
                 "Report Status Updated",
                 "The status of your report has been updated to " + newStatus,
                 NotificationType.REPORT_STATUS_UPDATED);
@@ -107,11 +108,19 @@ public class AdminServiceImplementation implements AdminService {
 
     @Override
     public void assignContractor(AssignContractorDto request) {
+        User admin  = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Contractor contractor = contractorRepository.findById(request.getContractorId()).orElseThrow();
         HazardReport report = hazardReportRepository.findById(request.getReportId()).orElseThrow();
 
         report.setContractor(contractor);
+        createStatusHistory(admin, report, report.getReportStatus(), ReportStatus.ASSIGNED, "Contractor Assigned " + contractor.getName());
+        report.setReportStatus(ReportStatus.ASSIGNED);
         hazardReportRepository.save(report);
+
+        notificationService.createNotification(report.getUser(),
+                "Contractor Assigned",
+                "A contractor has been assigned to your report",
+                NotificationType.REPORT_CONTRACTOR_ASSIGNED);
     }
 
     @Override

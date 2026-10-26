@@ -6,7 +6,6 @@ import com.roadguard.roadGuard_backend.Repository.FeedBackRepository;
 import com.roadguard.roadGuard_backend.Service.FeedBackService;
 import com.roadguard.roadGuard_backend.entity.FeedBack;
 import com.roadguard.roadGuard_backend.entity.HazardReport;
-import com.roadguard.roadGuard_backend.entity.User;
 import com.roadguard.roadGuard_backend.entity.types.ReportStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

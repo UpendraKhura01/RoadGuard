@@ -1,13 +1,11 @@
 package com.roadguard.roadGuard_backend.dto;
 
 import com.roadguard.roadGuard_backend.entity.types.HazardCategory;
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 

@@ -4,17 +4,11 @@ import com.cloudinary.Cloudinary;
 import com.roadguard.roadGuard_backend.Service.ImageStoringService;
 import com.roadguard.roadGuard_backend.dto.ImageUploadResponseDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;

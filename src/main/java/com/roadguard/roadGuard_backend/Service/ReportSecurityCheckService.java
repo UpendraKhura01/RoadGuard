@@ -39,13 +39,13 @@ public class ReportSecurityCheckService {
         if(createHazardRequestDto.getCameraOnly() != Boolean.TRUE){
             return "Report rejected because photo wasn't captured using Direct Camera Flow:";
         }
-        if(createHazardRequestDto.getFakeLocation().equals(Boolean.TRUE)){
+        if(Boolean.TRUE.equals(createHazardRequestDto.getFakeLocation())){
             return "Report rejected because fake/mock location was detected:";
         }
-        if(createHazardRequestDto.getVpnDetected().equals(Boolean.TRUE)){
+        if(Boolean.TRUE.equals(createHazardRequestDto.getVpnDetected())){
             return "Report rejected because Vpn detected";
         }
-        if(createHazardRequestDto.getGpsAccuracy() > 500){
+        if(createHazardRequestDto.getGpsAccuracy() != null && createHazardRequestDto.getGpsAccuracy() > 500){
             return "Report rejected because gpsAccuracy is very poor";
         }
 

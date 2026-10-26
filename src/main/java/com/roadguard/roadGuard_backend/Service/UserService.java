@@ -2,10 +2,8 @@ package com.roadguard.roadGuard_backend.Service;
 
 import com.roadguard.roadGuard_backend.dto.UpdatePasswordRequestDto;
 import com.roadguard.roadGuard_backend.dto.UpdatePhoneNumberRequestDto;
-import com.roadguard.roadGuard_backend.dto.UpdateProfileRequestDto;
 import com.roadguard.roadGuard_backend.dto.UserProfileResponseDto;
 import com.roadguard.roadGuard_backend.entity.User;
-import org.springframework.security.core.Authentication;
 
 import java.util.Map;
 

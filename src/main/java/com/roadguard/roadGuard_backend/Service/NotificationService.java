@@ -5,7 +5,6 @@ import com.roadguard.roadGuard_backend.entity.HazardReport;
 import com.roadguard.roadGuard_backend.entity.Notification;
 import com.roadguard.roadGuard_backend.entity.User;
 import com.roadguard.roadGuard_backend.entity.types.NotificationType;
-import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.Authentication;
 
 import java.util.List;

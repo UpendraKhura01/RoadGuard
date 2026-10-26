@@ -26,12 +26,19 @@ public class HazardReportUtil {
             return;
         }
         FakeLikeliHood isFakeImage = aiAssessment.getFakeLikelihood();
-        if(isFakeImage == FakeLikeliHood.HIGH){
+        Boolean needsAdminReview = aiAssessment.getNeedsAdminReview();
+        Boolean validHazard = aiAssessment.getValidHazard();
+        Boolean descriptionMatches = aiAssessment.getDescriptionMatchesImage();
+
+        if(isFakeImage == FakeLikeliHood.HIGH || !Boolean.TRUE.equals(validHazard)){
             report.setReportStatus(ReportStatus.AI_REJECTED);
             report.setPriorityScore(0);
         }
-        else if(isFakeImage == FakeLikeliHood.LOW){
+        else if(Boolean.TRUE.equals(needsAdminReview) || !Boolean.TRUE.equals(descriptionMatches)){
             report.setReportStatus(ReportStatus.PENDING_REVIEW);
+        }
+        else{
+            report.setReportStatus(ReportStatus.SUBMITTED);
         }
     }
 

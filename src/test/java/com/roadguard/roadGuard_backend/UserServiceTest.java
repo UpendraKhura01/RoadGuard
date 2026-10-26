@@ -1,9 +1,7 @@
 package com.roadguard.roadGuard_backend;
 
 import com.roadguard.roadGuard_backend.Service.UserService;
-import com.roadguard.roadGuard_backend.dto.UpdateProfileRequestDto;
 import com.roadguard.roadGuard_backend.dto.UserProfileResponseDto;
-import com.roadguard.roadGuard_backend.entity.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -3,7 +3,6 @@ package com.roadguard.roadGuard_backend.Service.AIServices;
 import com.roadguard.roadGuard_backend.dto.CreateHazardRequestDto;
 import com.roadguard.roadGuard_backend.dto.DirectAiResponseDto;
 import com.roadguard.roadGuard_backend.entity.types.FakeLikeliHood;
-import com.roadguard.roadGuard_backend.entity.types.HazardCategory;
 import com.roadguard.roadGuard_backend.entity.types.Severity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;

@@ -1,6 +1,5 @@
 package com.roadguard.roadGuard_backend.dto;
 
-import com.roadguard.roadGuard_backend.CustomAnnotation.PhoneNumber;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

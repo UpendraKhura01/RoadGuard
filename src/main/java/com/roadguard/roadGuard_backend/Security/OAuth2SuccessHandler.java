@@ -1,7 +1,6 @@
 package com.roadguard.roadGuard_backend.Security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.roadguard.roadGuard_backend.dto.LoginResponseDto;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
