@@ -1,8 +1,10 @@
 package com.roadguard.roadGuard_backend.Controller;
 
 import com.roadguard.roadGuard_backend.Security.AuthService;
+import com.roadguard.roadGuard_backend.Service.OAuthLoginTicketService;
 import com.roadguard.roadGuard_backend.Service.OtpService;
 import com.roadguard.roadGuard_backend.dto.*;
+import com.roadguard.roadGuard_backend.entity.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private final AuthService authService;
     private final OtpService otpService;
+    private final OAuthLoginTicketService ticketService;
 
     @PostMapping("/sendOtp")
     public ResponseEntity<OtpResponse> sendOtp(@RequestBody @Valid OtpRequestDto requestDto) {
@@ -39,6 +42,12 @@ public class AuthController {
     @PostMapping("/login/password")
     public ResponseEntity<LoginResponseDto> passwordLogin(@RequestBody @Valid passwordLoginRequestDto request){
         LoginResponseDto response = authService.passwordLogin(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/oauth2/exchange")
+    public ResponseEntity<LoginResponseDto> oauth2CodeExchange(@RequestBody @Valid OAuth2ExchangeRequestDto request){
+        LoginResponseDto response = authService.oauth2CodeExchange(request.getCode());
         return ResponseEntity.ok(response);
     }
 

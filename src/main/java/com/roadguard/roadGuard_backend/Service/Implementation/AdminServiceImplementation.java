@@ -38,15 +38,12 @@ public class AdminServiceImplementation implements AdminService {
         AdminReview review = adminReviewRepository.findByHazardReportId(reportId).orElseGet(AdminReview::new);
         ReportStatus oldStatus = report.getReportStatus();
         ReportStatus newStatus = statusFromDecision(request.getFinalDecision());
-        review = AdminReview.builder()
-                .hazardReport(report)
-                .reviewedBy(admin)
-                .finalDecision(request.getFinalDecision())
-                .finalSeverity(request.getFinalSeverity())
-                .finalCategory(request.getFinalCategory())
-                .comment(request.getComment())
-                .reviewedAt(LocalDateTime.now())
-                .build();
+
+        review.setHazardReport(report);
+        review.setReviewedBy(admin);
+        review.setReviewedAt(LocalDateTime.now());
+
+        modelMapper.map(request, review);
 
         report.setReportStatus(newStatus);
         report.setFinalCategory(request.getFinalCategory());
@@ -78,7 +75,7 @@ public class AdminServiceImplementation implements AdminService {
         hazardReportRepository.save(report);
 
         createStatusHistory(admin, report, oldStatus, updates.getNewStatus(), updates.getNotes());
-        notificationService.createNotification(admin,
+        notificationService.createNotification(report.getUser(),
                 "Report Status Updated",
                 "The status of your report has been updated to " + updates.getNewStatus(),
                 NotificationType.REPORT_STATUS_UPDATED);

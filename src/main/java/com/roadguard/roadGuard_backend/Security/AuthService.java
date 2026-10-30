@@ -1,11 +1,13 @@
 package com.roadguard.roadGuard_backend.Security;
 
 import com.roadguard.roadGuard_backend.Repository.UserRepository;
+import com.roadguard.roadGuard_backend.Service.OAuthLoginTicketService;
 import com.roadguard.roadGuard_backend.Service.OtpService;
 import com.roadguard.roadGuard_backend.dto.*;
 import com.roadguard.roadGuard_backend.entity.User;
 import com.roadguard.roadGuard_backend.entity.types.AuthProvider;
 import com.roadguard.roadGuard_backend.entity.types.Roles;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,7 @@ public class AuthService {
     private final OtpService otpService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final OAuthLoginTicketService ticketService;
 
     public SignupResponseDto signupPhoneNumber(SignupRequestDto request) {
 
@@ -35,7 +38,7 @@ public class AuthService {
 
         User user  = userRepository.findByPhoneNumber(number).orElse(null);
         if(user != null){
-            throw new BadCredentialsException("User already exists with the phone number :" + user);
+            throw new BadCredentialsException("User already exists with the phone number.");
         }
 
         user = User.builder()
@@ -43,8 +46,9 @@ public class AuthService {
                 .authProvider(AuthProvider.PHONE)
                 .password(passwordEncoder.encode(request.getPassword()))
                 .phoneNumber(request.getPhoneNumber())
+                .email(request.getEmail())
                 .roles(Roles.CITIZEN)
-                .isVerified(false)
+                .isVerified(true)
                 .reputationScore(0L)
                 .build();
         user = userRepository.save(user);
@@ -82,24 +86,31 @@ public class AuthService {
     }
 
     public LoginResponseDto passwordLogin(passwordLoginRequestDto request) {
-        String number = request.getPhoneNumber();
-        User user = userRepository.findByPhoneNumber(number).orElse(null);
+        if(request.getPhoneNumber() == null){
+            throw new BadCredentialsException("Phone number is required");
+        }
+
+
+        User user = userRepository.findByPhoneNumber(request.getPhoneNumber()).orElse(null);
+
+
         if(user == null){
-            throw new BadCredentialsException("Number is not registered:" + number);
+            throw new BadCredentialsException("Invalid phone or password ");
         }
         try {
             Authentication authentication = authenticationManager
-                    .authenticate(new UsernamePasswordAuthenticationToken(request.getPhoneNumber(), request.getPassword()));
+                    .authenticate(new UsernamePasswordAuthenticationToken(user.getPhoneNumber(), request.getPassword()));
             user = (User) authentication.getPrincipal();
         } catch (BadCredentialsException e) {
-            throw new BadCredentialsException("Wrong password");
+            throw new BadCredentialsException("Invalid phone/email or password");
         }
 
+        assert user != null;
         String token = authUtil.generateToken(user);
 
         return LoginResponseDto.builder()
                 .token(token)
-                .phoneNumber(number)
+                .phoneNumber(user.getPhoneNumber())
                 .name(user.getName())
                 .userId(user.getId())
                 .email(user.getEmail())
@@ -128,5 +139,27 @@ public class AuthService {
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+    public User getUserByEmail(String email) {
+
+        return userRepository.findByEmail(email).orElse(null);
+    }
+
+
+    public LoginResponseDto oauth2CodeExchange(@NotBlank(message = "code is required") String code) {
+
+        User user = ticketService.consumeTicket(code);
+
+        String token = authUtil.generateToken(user);
+        return LoginResponseDto.builder()
+                .token(token)
+                .phoneNumber(user.getPhoneNumber())
+                .email(user.getEmail())
+                .name(user.getName())
+                .userId(user.getId())
+                .role(user.getRoles())
+                .message("OAuth2 login successful")
+                .build();
     }
 }

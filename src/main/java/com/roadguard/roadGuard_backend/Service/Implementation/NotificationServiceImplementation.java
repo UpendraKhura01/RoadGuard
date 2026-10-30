@@ -78,6 +78,7 @@ public class NotificationServiceImplementation implements NotificationService {
             throw new IllegalArgumentException("Notification does not belong to this user.");
         }
         notification.setIsRead(true);
+        notificationRepository.save(notification);
         return modelMapper.map(notification, NotificationResponseDto.class);
     }
 }

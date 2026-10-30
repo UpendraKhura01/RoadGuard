@@ -17,28 +17,40 @@ public class HazardReportUtil {
 
     public void updateReportWithAiAssessment(HazardReport report, AiAssessment aiAssessment) {
         report.setAiSeverity(aiAssessment.getSeverity());
-        report.setFinalCategory(aiAssessment.getHazardCategory());
 
-        if(report.getFinalSeverity() == null){
-            report.setFinalSeverity(aiAssessment.getSeverity());
-        }
         if(report.getReportStatus() == ReportStatus.REJECTED){
             return;
         }
+
         FakeLikeliHood isFakeImage = aiAssessment.getFakeLikelihood();
         Boolean needsAdminReview = aiAssessment.getNeedsAdminReview();
         Boolean validHazard = aiAssessment.getValidHazard();
+        Boolean isRoadImage = aiAssessment.getIsRoadImage();
+        Double confidence = aiAssessment.getConfidence();
         Boolean descriptionMatches = aiAssessment.getDescriptionMatchesImage();
 
-        if(isFakeImage == FakeLikeliHood.HIGH || !Boolean.TRUE.equals(validHazard)){
+        boolean isClearFake = isFakeImage == FakeLikeliHood.HIGH &&
+                (confidence == null || confidence > 0.7);
+        boolean isClearlyInvalid = !Boolean.TRUE.equals(validHazard) &&
+                (confidence == null || confidence > 0.7);
+
+
+        if(isClearFake || isClearlyInvalid){
             report.setReportStatus(ReportStatus.AI_REJECTED);
             report.setPriorityScore(0);
         }
-        else if(Boolean.TRUE.equals(needsAdminReview) || !Boolean.TRUE.equals(descriptionMatches)){
+        else if(isFakeImage == FakeLikeliHood.MEDIUM ||
+                !Boolean.TRUE.equals(isRoadImage) ||
+                Boolean.TRUE.equals(needsAdminReview) ||
+                !Boolean.TRUE.equals(descriptionMatches) ||
+                (confidence != null && confidence < 0.7)){
             report.setReportStatus(ReportStatus.PENDING_REVIEW);
         }
-        else{
+        else {
             report.setReportStatus(ReportStatus.SUBMITTED);
+            if (aiAssessment.getAiPriorityScore() != null) {
+                report.setPriorityScore(aiAssessment.getAiPriorityScore());
+            }
         }
     }
 

@@ -1,6 +1,7 @@
 package com.roadguard.roadGuard_backend.dto;
 
 import com.roadguard.roadGuard_backend.entity.types.NotificationType;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class NotificationResponseDto {
+
+
+    private Long notificationId;
 
     private Long reportId;
 

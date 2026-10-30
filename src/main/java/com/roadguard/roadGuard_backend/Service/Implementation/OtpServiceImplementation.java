@@ -29,6 +29,7 @@ public class OtpServiceImplementation implements OtpService {
         String otp = generateOtp(phoneNumber);
         OtpResponse otpResponse = new OtpResponse();
         otpResponse.setMessage("Your Otp is " + otp);
+        System.out.println("Your Otp is " + otp + " for phone number " + phoneNumber);
         return otpResponse;
     }
 

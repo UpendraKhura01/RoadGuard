@@ -156,7 +156,7 @@ public class GeminiAIProvider implements AiProvider {
                     .severity(mapToSeverity(geminiResponse.getSeverity()))
                     .isRoadImage(geminiResponse.getIsRoadImage() != null ? geminiResponse.getIsRoadImage() : true)
                     .validHazard(geminiResponse.getValidHazard() != null ? geminiResponse.getValidHazard() : true)
-                    .aiConfidence(geminiResponse.getConfidence() != null ? geminiResponse.getConfidence() : 7.0)
+                    .aiConfidence(geminiResponse.getConfidence() != null ? geminiResponse.getConfidence() /10.0 : 0.7)
                     .fakeLikelihood(mapToFakeLikelihood(geminiResponse.getFakeLikelihood()))
                     .descriptionMatchesImage(geminiResponse.getDescriptionMatchesImage() != null ? geminiResponse.getDescriptionMatchesImage() : true)
                     .needsAdminReview(geminiResponse.getNeedsAdminReview() != null ? geminiResponse.getNeedsAdminReview() : false)

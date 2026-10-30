@@ -94,7 +94,10 @@ public class HazardReportServiceImplementation implements HazardReportService {
         savedReport.setAiAssessment(aiAssessment);
         hazardReportUtil.updateReportWithAiAssessment(savedReport, aiAssessment);
 
-        savedReport.setPriorityScore(aiAssessment.getAiPriorityScore());
+        if (savedReport.getReportStatus() != ReportStatus.AI_REJECTED &&
+                savedReport.getReportStatus() != ReportStatus.REJECTED) {
+            savedReport.setPriorityScore(aiAssessment.getAiPriorityScore());
+        }
 
         //update report with AiAssessment report, and it is in transactional context so it is atomic
         savedReport = hazardReportRepository.save(savedReport);

@@ -4,6 +4,7 @@ import com.roadguard.roadGuard_backend.Service.FeedBackService;
 import com.roadguard.roadGuard_backend.dto.ApiMessageResponseDto;
 import com.roadguard.roadGuard_backend.dto.FeedBackRequestDto;
 import com.roadguard.roadGuard_backend.entity.User;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -17,7 +18,7 @@ public class FeedBackController {
 
     @PostMapping("/report/feedback/{reportId}")
     ResponseEntity<ApiMessageResponseDto> GiveFeedBack(@PathVariable Long reportId,
-                                                       @RequestBody FeedBackRequestDto request,
+                                                       @RequestBody @Valid FeedBackRequestDto request,
                                                        Authentication authentication){
         User user = (User) authentication.getPrincipal();
         Long id = user.getId();

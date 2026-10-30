@@ -15,8 +15,6 @@ import java.time.LocalDateTime;
 public class HazardReportResponseDto {
 
     private Long reportId;
-    private Long userId;
-    private String userName;
 
     private String description;
     private HazardCategory reportedCategory;

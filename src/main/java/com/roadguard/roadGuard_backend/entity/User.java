@@ -44,6 +44,7 @@ public class User implements UserDetails {
     private String password;
 
     @Email
+    @Column(unique = true)
     private String email;
 
     @Column(unique = true, nullable = false)
@@ -85,4 +86,5 @@ public class User implements UserDetails {
     public String getUsername() {
         return phoneNumber;
     }
+
 }

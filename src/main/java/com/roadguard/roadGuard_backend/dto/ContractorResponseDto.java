@@ -9,6 +9,7 @@ import lombok.*;
 @Setter
 public class ContractorResponseDto {
 
+    private Long id;
     private String name;
     private String phoneNumber;
     private String email;

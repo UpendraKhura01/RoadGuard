@@ -32,6 +32,9 @@ public class ReportSecurityCheckService {
         } else if (createHazardRequestDto.getGpsAccuracy() == null) {
             return ReportStatus.PENDING_REVIEW;
         }
+        else if (createHazardRequestDto.getGpsAccuracy() > 500) {
+            return ReportStatus.PENDING_REVIEW;
+        }
 
         return ReportStatus.SUBMITTED;
     }

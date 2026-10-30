@@ -4,9 +4,8 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roadguard.roadGuard_backend.dto.HazardReportResponseDto;
-import com.roadguard.roadGuard_backend.entity.AiAssessment;
-import com.roadguard.roadGuard_backend.entity.HazardReport;
-import com.roadguard.roadGuard_backend.entity.ReportSecurityCheck;
+import com.roadguard.roadGuard_backend.dto.NotificationResponseDto;
+import com.roadguard.roadGuard_backend.entity.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -32,8 +31,6 @@ public class AppConfig {
         modelMapper.createTypeMap(HazardReport.class, HazardReportResponseDto.class)
                 .addMappings(mapper -> {
                     mapper.map(HazardReport::getId, HazardReportResponseDto::setReportId);
-                    mapper.map(src -> src.getUser().getId(), HazardReportResponseDto::setUserId);
-                    mapper.map(src -> src.getUser().getName(), HazardReportResponseDto::setUserName);
                     mapper.map(src ->{
                         ReportSecurityCheck securityCheck = src.getReportSecurityCheck();
                         return securityCheck != null ? securityCheck.getDecisionReason() : null;
@@ -42,7 +39,18 @@ public class AppConfig {
                         AiAssessment aiAssessment = src.getAiAssessment();
                         return aiAssessment != null ? aiAssessment.getExplanation() : null;
                     }, HazardReportResponseDto::setAiExplanation);
+                    mapper.map(src -> {
+                        ReportImage image = src.getReportImage();
+                        return image != null ? image.getUrl() : null;
+                    }, HazardReportResponseDto::setImageUrl);
                 });
+
+        //For Notification to NotificationResponseDto
+        modelMapper.createTypeMap(Notification.class, NotificationResponseDto.class)
+                .addMappings(mapper -> {
+                    mapper.map(Notification::getId, NotificationResponseDto::setNotificationId);
+                });
+
 
 
         return modelMapper;

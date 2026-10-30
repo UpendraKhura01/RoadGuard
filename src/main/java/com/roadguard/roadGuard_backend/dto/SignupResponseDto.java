@@ -28,6 +28,6 @@ public class SignupResponseDto {
     @NotBlank
     String token;
 
-    @NotBlank
+    @NotNull
     Roles role;
 }
