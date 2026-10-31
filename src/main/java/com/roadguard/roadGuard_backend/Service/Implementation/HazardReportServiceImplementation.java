@@ -12,6 +12,8 @@ import com.roadguard.roadGuard_backend.entity.*;
 import com.roadguard.roadGuard_backend.entity.types.HazardCategory;
 import com.roadguard.roadGuard_backend.entity.types.ImageSource;
 import com.roadguard.roadGuard_backend.entity.types.ReportStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -140,31 +142,22 @@ public class HazardReportServiceImplementation implements HazardReportService {
     }
 
     @Override
-    public List<HazardReportResponseDto> getVerifiedReports(User user) {
-
-        List<HazardReport> reports = hazardReportRepository.findByReportStatus(ReportStatus.VERIFIED);
-        List<HazardReportResponseDto> response = reports.stream()
-                .map(report -> modelMapper.map(report, HazardReportResponseDto.class))
-                .toList();
-        return response;
+    public Page<HazardReportResponseDto> getVerifiedReports(User user, Pageable pageable) {
+        Page<HazardReport> reports = hazardReportRepository.findByReportStatus(ReportStatus.VERIFIED, pageable);
+        return reports.map(report -> modelMapper.map(report, HazardReportResponseDto.class));
     }
 
     @Override
-    public List<HazardReportResponseDto> getReportsByStatus(ReportStatus status) {
-        List<HazardReport> reports = hazardReportRepository.findByReportStatus(status);
-        List<HazardReportResponseDto> response = reports.stream()
-                .map(report -> modelMapper.map(report, HazardReportResponseDto.class))
-                .toList();
-        return response;
+    public Page<HazardReportResponseDto> getReportsByStatus(ReportStatus status, Pageable pageable) {
+        Page<HazardReport> reports = hazardReportRepository.findByReportStatus(status, pageable);
+        return reports.map(report -> modelMapper.map(report, HazardReportResponseDto.class));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<HazardReportResponseDto> getAllReports() {
-        List<HazardReport> responseDtos = hazardReportRepository.findAll();
-        return responseDtos.stream()
-                .map(report -> modelMapper.map(report, HazardReportResponseDto.class))
-                .toList();
+    public Page<HazardReportResponseDto> getAllReports(Pageable pageable) {
+        Page<HazardReport> responseDtos = hazardReportRepository.findAll(pageable);
+        return responseDtos.map(report -> modelMapper.map(report, HazardReportResponseDto.class));
     }
 
     @Override

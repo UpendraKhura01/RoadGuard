@@ -10,11 +10,25 @@ import java.util.List;
 public interface RoadInformationRepository extends JpaRepository<RoadInformation, Long> {
     RoadInformation findByLatitudeAndLongitude(Double latitude, Double longitude);
 
-    List<RoadInformation> findByContractorId(Long contractorId);
+    @Query("SELECT r FROM RoadInformation r JOIN FETCH r.contractor WHERE r.contractor.id = :contractorId")
+    List<RoadInformation> findByContractorIdWithContractor(@Param("contractorId") Long contractorId);
 
     @Query("SELECT r FROM RoadInformation r WHERE " +
-            "SQRT(POWER(r.latitude - :lat, 2) + POWER(r.longitude - :lon, 2)) < :radius")
-    List<RoadInformation> findNearby(@Param("lat") Double lat,
-                                     @Param("lon") Double lon,
-                                     @Param("radius") Double radius);
+            "r.latitude BETWEEN :minLat AND :maxLat AND " +
+            "r.longitude BETWEEN :minLon AND :maxLon")
+    List<RoadInformation> findInBoundingBox(@Param("minLat") Double minLat,
+                                            @Param("maxLat") Double maxLat,
+                                            @Param("minLon") Double minLon,
+                                            @Param("maxLon") Double maxLon);
+
+    default List<RoadInformation> findNearby(Double lat, Double lon, Double radius) {
+        Double minLat = lat - radius;
+        Double maxLat = lat + radius;
+        Double minLon = lon - radius;
+        Double maxLon = lon + radius;
+
+        return findInBoundingBox(minLat, maxLat, minLon, maxLon).stream()
+                .filter(r -> Math.sqrt(Math.pow(r.getLatitude() - lat, 2) + Math.pow(r.getLongitude() - lon, 2)) < radius)
+                .toList();
+    }
 }

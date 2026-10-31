@@ -4,13 +4,16 @@ import com.roadguard.roadGuard_backend.dto.CreateHazardRequestDto;
 import com.roadguard.roadGuard_backend.dto.HazardReportResponseDto;
 import com.roadguard.roadGuard_backend.entity.User;
 import com.roadguard.roadGuard_backend.entity.types.ReportStatus;
+import org.jspecify.annotations.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface HazardReportService {
 
-    public HazardReportResponseDto createReport(Long userid,
+    HazardReportResponseDto createReport(Long userid,
                                          CreateHazardRequestDto request,
                                          MultipartFile photo);
 
@@ -19,11 +22,11 @@ public interface HazardReportService {
 
     List<HazardReportResponseDto> getMyReports(User user);
 
-    List<HazardReportResponseDto> getVerifiedReports(User user);
+    Page<@NonNull HazardReportResponseDto> getVerifiedReports(User user, Pageable pageable);
 
-    List<HazardReportResponseDto> getReportsByStatus(ReportStatus status);
+    Page<@NonNull HazardReportResponseDto> getReportsByStatus(ReportStatus status, Pageable pageable);
 
-    List<HazardReportResponseDto> getAllReports();
+    Page<@NonNull HazardReportResponseDto> getAllReports(Pageable pageable);
 
     List<HazardReportResponseDto> getNearbyReports(User user);
 
@@ -40,4 +43,6 @@ public interface HazardReportService {
     long getDistrictReportsCount(Long userId);
 
     long getStateReportsCount(Long userId);
+
+
 }

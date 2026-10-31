@@ -15,6 +15,8 @@ import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.mock.web.MockMultipartFile;
 
 
@@ -72,7 +74,7 @@ public class HazardReportTest {
 
     @Test
     public void testGetAllReports() throws JsonProcessingException {
-        List<HazardReportResponseDto> response = hazardReportService.getAllReports();
+        Page<HazardReportResponseDto> response = hazardReportService.getAllReports(Pageable.unpaged());
         ObjectMapper mapper = new ObjectMapper();
         System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(response));
     }

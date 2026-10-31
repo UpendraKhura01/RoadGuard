@@ -7,6 +7,11 @@ import com.roadguard.roadGuard_backend.entity.User;
 import com.roadguard.roadGuard_backend.entity.types.ReportStatus;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -22,13 +27,22 @@ public class AdminController {
     private final HazardReportService hazardReportService;
 
     @GetMapping("/reports/byStatus")
-    public ResponseEntity<List<HazardReportResponseDto>> getReportsByStatus(@RequestParam ReportStatus status){
-        List<HazardReportResponseDto> reports = hazardReportService.getReportsByStatus(status);
+    public ResponseEntity<@NonNull Page<@NonNull HazardReportResponseDto>> getReportsByStatus(
+            @RequestParam ReportStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir){
+
+        if(size > 100) size = 100;
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<@NonNull HazardReportResponseDto> reports = hazardReportService.getReportsByStatus(status, pageable);
         return ResponseEntity.ok(reports);
     }
 
     @PostMapping("/reviewReport/{reportId}")
-    public ResponseEntity<AdminReviewResponseDto> reviewReport(@PathVariable Long reportId,
+    public ResponseEntity<@NonNull AdminReviewResponseDto> reviewReport(@PathVariable Long reportId,
                                                                    @RequestBody @Valid AdminReviewRequestDto adminReviewRequestDto,
                                                                    Authentication authentication){
         AdminReviewResponseDto response = adminService.reviewReport(reportId, adminReviewRequestDto, authentication);
@@ -61,8 +75,16 @@ public class AdminController {
     }
 
     @GetMapping("/reports/all")
-    public ResponseEntity<List<HazardReportResponseDto>> getAllReports(){
-        List<HazardReportResponseDto> reports = hazardReportService.getAllReports();
+    public ResponseEntity<@NonNull Page<@NonNull HazardReportResponseDto>> getAllReports(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir){
+
+        if(size > 100) size = 100;
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<@NonNull HazardReportResponseDto> reports = hazardReportService.getAllReports(pageable);
         return ResponseEntity.ok(reports);
     }
 

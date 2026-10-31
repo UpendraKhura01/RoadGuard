@@ -104,6 +104,7 @@ public class AdminServiceImplementation implements AdminService {
     }
 
     @Override
+    @Transactional
     public void assignContractor(AssignContractorDto request) {
         User admin  = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Contractor contractor = contractorRepository.findById(request.getContractorId()).orElseThrow();
@@ -133,15 +134,17 @@ public class AdminServiceImplementation implements AdminService {
         LocalDateTime weekAgo = LocalDateTime.now().minusWeeks(1);
         LocalDateTime monthAgo = LocalDateTime.now().minusMonths(1);
 
+        AnalyticsCountDto counts = hazardReportRepository.getAnalyticsCounts(weekAgo, monthAgo);
+
         return AnalyticsResponseDto.builder()
-                .totalReports(hazardReportRepository.count())
-                .pendingReports(hazardReportRepository.countByReportStatus(ReportStatus.PENDING_REVIEW))
-                .rejectedReports(hazardReportRepository.countByReportStatus(ReportStatus.REJECTED))
-                .verifiedReports(hazardReportRepository.countByReportStatus(ReportStatus.VERIFIED))
+                .totalReports(counts.getTotalReports())
+                .pendingReports(counts.getPendingReports())
+                .rejectedReports(counts.getRejectedReports())
+                .verifiedReports(counts.getVerifiedReports())
                 .totalUsers(userRepository.count())
                 .activeContractors(contractorRepository.count())
-                .reportsThisWeek(hazardReportRepository.countByCreatedAtAfter(weekAgo))
-                .reportsThisMonth(hazardReportRepository.countByCreatedAtAfter(monthAgo))
+                .reportsThisWeek(counts.getReportsThisWeek())
+                .reportsThisMonth(counts.getReportsThisMonth())
                 .build();
     }
 

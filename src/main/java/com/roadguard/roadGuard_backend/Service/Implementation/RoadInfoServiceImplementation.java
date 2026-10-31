@@ -36,8 +36,7 @@ public class RoadInfoServiceImplementation implements RoadInfoService {
 
     @Override
     public List<RoadInfoResponseDto> getAllRoadInfoOfContractor(Long contractorId) {
-        List<RoadInformation> roadInformations = roadInformationRepository.findByContractorId(contractorId);
-
+        List<RoadInformation> roadInformations = roadInformationRepository.findByContractorIdWithContractor(contractorId);
 
         return roadInformations.stream()
                 .map(road -> {

@@ -13,10 +13,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "notification", indexes = {
-        @Index(name = "idx_user_id", columnList = "user_id"),
-        @Index(name = "idx_is_read", columnList = "is_read"),
-        @Index(name = "idx_user_read", columnList = "user_id, is_read"),
-        @Index(name = "idx_created_at", columnList = "created_at")
+        @Index(name = "idx_notification_user_id", columnList = "user_id"),
+        @Index(name = "idx_notification_is_read", columnList = "is_read"),
+        @Index(name = "idx_notification_user_read", columnList = "user_id, is_read"),
+        @Index(name = "idx_notification_created_at", columnList = "created_at") // <-- Unique name!
 })
 public class Notification {
 
