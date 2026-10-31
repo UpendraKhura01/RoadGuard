@@ -36,6 +36,7 @@ public class CitizenReportResponseDto {
     private String address;
     private String city;
     private String ward;
+    private String fullAddress;
 
     private String imageUrl;
     private String aiExplanation;

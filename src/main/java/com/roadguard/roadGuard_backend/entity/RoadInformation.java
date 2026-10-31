@@ -14,6 +14,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Setter
 @Getter
+@Table(name = "road_information", indexes = {
+        @Index(name = "idx_contractor_id", columnList = "contractor_id"),
+        @Index(name = "idx_location", columnList = "latitude, longitude")
+})
 public class RoadInformation {
 
     @Id

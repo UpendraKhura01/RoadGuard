@@ -26,4 +26,15 @@ public interface HazardReportRepository extends JpaRepository<HazardReport, Long
     long countByReportStatus(ReportStatus reportStatus);
 
     long countByCreatedAtAfter(LocalDateTime weekAgo);
+
+    List<HazardReport> findByWardAndReportStatusNotIn(String ward, List<ReportStatus> statuses);
+    List<HazardReport> findByBlockAndReportStatusNotIn(String block, List<ReportStatus> statuses);
+
+    // Count methods for filtered queries
+    long countByWardAndReportStatusNotIn(String ward, List<ReportStatus> statuses);
+    long countByBlockAndReportStatusNotIn(String block, List<ReportStatus> statuses);
+
+    // Count methods for other areas (if needed)
+    long countByDistrict(String district);
+    long countByState(String state);
 }

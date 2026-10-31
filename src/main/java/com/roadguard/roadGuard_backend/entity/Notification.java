@@ -12,6 +12,12 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "notification", indexes = {
+        @Index(name = "idx_user_id", columnList = "user_id"),
+        @Index(name = "idx_is_read", columnList = "is_read"),
+        @Index(name = "idx_user_read", columnList = "user_id, is_read"),
+        @Index(name = "idx_created_at", columnList = "created_at")
+})
 public class Notification {
 
     @Id

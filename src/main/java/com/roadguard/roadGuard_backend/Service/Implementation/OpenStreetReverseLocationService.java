@@ -57,11 +57,9 @@ public class OpenStreetReverseLocationService implements ReverseLocationService 
 
             LocationDetailsDto locationDetailsDto = new LocationDetailsDto();
             modelMapper.map(locationsDetailsRootDto, locationDetailsDto);
-            locationDetailsDto = LocationDetailsDto.builder()
-                    .ward(village)
-                    .block(block)
-                    .pinCode(locationsDetailsRootDto.getPostcode())
-                    .build();
+            locationDetailsDto.setWard(village);  // Custom logic
+            locationDetailsDto.setBlock(block);
+            locationDetailsDto.setFullAddress(finalAddress);// Custom logic
             return locationDetailsDto;
 
         }

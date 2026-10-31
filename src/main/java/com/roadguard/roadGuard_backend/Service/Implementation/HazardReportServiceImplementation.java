@@ -37,6 +37,7 @@ public class HazardReportServiceImplementation implements HazardReportService {
     private final ModelMapper modelMapper;
     private final AuthUtil authUtil;
 
+
     @Transactional
     public HazardReportResponseDto createReport(Long userId,
                                                 CreateHazardRequestDto request,
@@ -75,6 +76,7 @@ public class HazardReportServiceImplementation implements HazardReportService {
                 .district(locationsDetailsDto.getDistrict())
                 .state(locationsDetailsDto.getState())
                 .pinCode(locationsDetailsDto.getPinCode())
+                .fullAddress(locationsDetailsDto.getFullAddress())
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
                 .createdAt(request.getCapturedAt())
@@ -173,7 +175,8 @@ public class HazardReportServiceImplementation implements HazardReportService {
             throw new IllegalArgumentException("Location is not set");
         }
 
-        List<HazardReport> reports = hazardReportRepository.findByWard(user.getWard());
+        List<ReportStatus> excludedStatuses = List.of(ReportStatus.RESOLVED, ReportStatus.REJECTED, ReportStatus.AI_REJECTED);
+        List<HazardReport> reports = hazardReportRepository.findByWardAndReportStatusNotIn(user.getWard(), excludedStatuses);
         return reports.stream()
                 .map(report -> modelMapper.map(report, HazardReportResponseDto.class))
                 .toList();
@@ -187,7 +190,8 @@ public class HazardReportServiceImplementation implements HazardReportService {
             throw new IllegalArgumentException("Location is not set");
         }
 
-        List<HazardReport> reports = hazardReportRepository.findByBlock(user.getBlock());
+        List<ReportStatus> excludedStatuses = List.of(ReportStatus.RESOLVED, ReportStatus.REJECTED, ReportStatus.AI_REJECTED);
+        List<HazardReport> reports = hazardReportRepository.findByBlockAndReportStatusNotIn(user.getBlock(), excludedStatuses);
         return reports.stream()
                 .map(report -> modelMapper.map(report, HazardReportResponseDto.class))
                 .toList();
@@ -217,6 +221,48 @@ public class HazardReportServiceImplementation implements HazardReportService {
         return reports.stream()
                 .map(report -> modelMapper.map(report, HazardReportResponseDto.class))
                 .toList();
+    }
+
+    @Override
+    public long getNearbyReportsCount(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if(user.getWard() == null){
+            throw new IllegalArgumentException("Location is not set");
+        }
+        List<ReportStatus> excludedStatuses = List.of(ReportStatus.RESOLVED, ReportStatus.REJECTED, ReportStatus.AI_REJECTED);
+        return hazardReportRepository.countByWardAndReportStatusNotIn(user.getWard(), excludedStatuses);
+    }
+
+    @Override
+    public long getCityReportsCount(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if(user.getBlock() == null){
+            throw new IllegalArgumentException("Location is not set");
+        }
+        List<ReportStatus> excludedStatuses = List.of(ReportStatus.RESOLVED, ReportStatus.REJECTED, ReportStatus.AI_REJECTED);
+        return hazardReportRepository.countByBlockAndReportStatusNotIn(user.getBlock(), excludedStatuses);
+    }
+
+    @Override
+    public long getDistrictReportsCount(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if(user.getDistrict() == null){
+            throw new IllegalArgumentException("Location is not set");
+        }
+        return hazardReportRepository.countByDistrict(user.getDistrict());
+    }
+
+    @Override
+    public long getStateReportsCount(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if(user.getState() == null){
+            throw new IllegalArgumentException("Location is not set");
+        }
+        return hazardReportRepository.countByState(user.getState());
     }
 
     private Integer CalculateInitialScore(HazardCategory reportedCategory, ReportStatus initialStatus) {

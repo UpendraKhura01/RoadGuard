@@ -2,8 +2,10 @@ package com.roadguard.roadGuard_backend.Service;
 
 import com.roadguard.roadGuard_backend.dto.UpdatePasswordRequestDto;
 import com.roadguard.roadGuard_backend.dto.UpdatePhoneNumberRequestDto;
+import com.roadguard.roadGuard_backend.dto.UpdatePhoneNumberResponseDto;
 import com.roadguard.roadGuard_backend.dto.UserProfileResponseDto;
 import com.roadguard.roadGuard_backend.entity.User;
+
 
 import java.util.Map;
 
@@ -19,5 +21,5 @@ public interface UserService {
 
     void updateProfile(Long id, Map<String, Object> request);
 
-    void updatePhoneNumber(Long id, UpdatePhoneNumberRequestDto request);
+    UpdatePhoneNumberResponseDto updatePhoneNumber(Long id, UpdatePhoneNumberRequestDto request);
 }

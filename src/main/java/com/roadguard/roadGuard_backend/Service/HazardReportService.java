@@ -32,4 +32,12 @@ public interface HazardReportService {
     List<HazardReportResponseDto> getDistrictReports(User user);
 
     List<HazardReportResponseDto> getStateReports(User user);
+
+    long getNearbyReportsCount(Long userId);
+
+    long getCityReportsCount(Long userId);
+
+    long getDistrictReportsCount(Long userId);
+
+    long getStateReportsCount(Long userId);
 }

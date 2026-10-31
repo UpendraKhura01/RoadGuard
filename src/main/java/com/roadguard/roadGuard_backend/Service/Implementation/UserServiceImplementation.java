@@ -3,6 +3,7 @@ package com.roadguard.roadGuard_backend.Service.Implementation;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roadguard.roadGuard_backend.Repository.UserRepository;
+import com.roadguard.roadGuard_backend.Security.AuthUtil;
 import com.roadguard.roadGuard_backend.Service.OtpService;
 import com.roadguard.roadGuard_backend.Service.ReverseLocationService;
 import com.roadguard.roadGuard_backend.Service.UserService;
@@ -29,6 +30,7 @@ public class UserServiceImplementation implements UserService {
     private final ReverseLocationService reverseLocationService;
     private final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
+    private final AuthUtil authUtil;
     private final Set<String> restrictedFields = Set.of("phoneNumber", "roles", "id", "password");
 
     @Override
@@ -68,7 +70,6 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    @Transactional
     public UserProfileResponseDto getProfile(Long id) {
 
         User user = userRepository.findById(id).orElse(null);
@@ -77,6 +78,7 @@ public class UserServiceImplementation implements UserService {
         }
         UserProfileResponseDto response = modelMapper.map(user, UserProfileResponseDto.class);
         response.setAddress(user.getFullAddress());
+
 
         return response;
     }
@@ -117,7 +119,7 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     @Transactional
-    public void updatePhoneNumber(Long id, UpdatePhoneNumberRequestDto request) {
+    public UpdatePhoneNumberResponseDto updatePhoneNumber(Long id, UpdatePhoneNumberRequestDto request) {
         User user = userRepository.findById(id).orElse(null);
         if(user == null){
             throw new EntityNotFoundException("User doesn't exist with that id " + id);
@@ -136,6 +138,12 @@ public class UserServiceImplementation implements UserService {
 
         user.setPhoneNumber(newPhoneNumber);
         userRepository.save(user);
+
+        String newToken = authUtil.generateToken(user);
+        return UpdatePhoneNumberResponseDto.builder()
+                .token(newToken)
+                .newPhoneNumber(newPhoneNumber)
+                .build();
     }
 
 }

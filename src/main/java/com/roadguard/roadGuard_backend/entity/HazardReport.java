@@ -16,6 +16,16 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "hazard_report", indexes = {
+        @Index(name = "idx_report_status", columnList = "report_status"),
+        @Index(name = "idx_ward", columnList = "ward"),
+        @Index(name = "idx_block", columnList = "block"),
+        @Index(name = "idx_district", columnList = "district"),
+        @Index(name = "idx_state", columnList = "state"),
+        @Index(name = "idx_created_at", columnList = "created_at"),
+        @Index(name = "idx_ward_status", columnList = "ward, report_status"),
+        @Index(name = "idx_block_status", columnList = "block, report_status")
+})
 public class HazardReport {
 
     @Id
@@ -26,11 +36,11 @@ public class HazardReport {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(nullable = false)
     private ReportImage reportImage;
 
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn
     private FeedBack feedBack;
 

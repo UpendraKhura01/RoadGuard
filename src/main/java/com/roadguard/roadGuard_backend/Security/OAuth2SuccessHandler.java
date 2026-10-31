@@ -43,12 +43,13 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             return;
         }
 
-        String userAgent = request.getHeader("User-Agent");
-        boolean isMobileApp = userAgent != null && userAgent.contains("RoadGuardApp");
+        boolean isMobileApp = request.getSession().getAttribute("mobile-flow") != null;
+
 
         if(isMobileApp){
             String ticket = oAuthLoginTicketService.createTicket(user.getId());
             response.sendRedirect(appDeepLink + "?code=" + ticket);
+            request.getSession().removeAttribute("mobile-flow");
         }
         else{
             //Browser for Testing(no ticke) direct login json
@@ -56,6 +57,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             response.setStatus(loginResponse.getStatusCode().value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.getWriter().write(objectMapper.writeValueAsString(loginResponse.getBody()));
+
         }
 
     }

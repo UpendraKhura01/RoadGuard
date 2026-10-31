@@ -127,6 +127,31 @@ public class HazardReportController {
     }
 
 
+    @GetMapping("/nearbyReports/count")
+    public ResponseEntity<Long> getNearByReportsCount(Authentication authentication){
+        User user = (User)authentication.getPrincipal();
+        return ResponseEntity.ok(hazardReportService.getNearbyReportsCount(user.getId()));
+    }
+
+    @GetMapping("/cityReports/count")
+    public ResponseEntity<Long> getCityReportsCount(Authentication authentication){
+        User user = (User)authentication.getPrincipal();
+        return ResponseEntity.ok(hazardReportService.getCityReportsCount(user.getId()));
+    }
+
+    @GetMapping("/DistrictReports/count")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHORITY')")
+    public ResponseEntity<Long> getDistrictReportsCount(Authentication authentication){
+        User user = (User)authentication.getPrincipal();
+        return ResponseEntity.ok(hazardReportService.getDistrictReportsCount(user.getId()));
+    }
+
+    @GetMapping("/StateReports/count")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHORITY')")
+    public ResponseEntity<Long> getStateReportsCount(Authentication authentication){
+        User user = (User)authentication.getPrincipal();
+        return ResponseEntity.ok(hazardReportService.getStateReportsCount(user.getId()));
+    }
 
 
 }

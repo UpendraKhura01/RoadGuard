@@ -65,9 +65,9 @@ public class UserController {
     }
 
     @PostMapping("/updatePhoneNumber")
-    public ResponseEntity<ApiMessageResponseDto> updatePhoneNumber(Authentication authentication,@Valid @RequestBody UpdatePhoneNumberRequestDto request){
+    public ResponseEntity<UpdatePhoneNumberResponseDto> updatePhoneNumber(Authentication authentication,@Valid @RequestBody UpdatePhoneNumberRequestDto request){
         User user = (User) authentication.getPrincipal();
-        userService.updatePhoneNumber(user.getId(), request);
-        return ResponseEntity.ok(new ApiMessageResponseDto("Phone number has been updated"));
+        UpdatePhoneNumberResponseDto response = userService.updatePhoneNumber(user.getId(), request);
+        return ResponseEntity.ok(response);
     }
 }

@@ -4,6 +4,8 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roadguard.roadGuard_backend.dto.HazardReportResponseDto;
+import com.roadguard.roadGuard_backend.dto.LocationDetailsDto;
+import com.roadguard.roadGuard_backend.dto.LocationsDetailsRootDto;
 import com.roadguard.roadGuard_backend.dto.NotificationResponseDto;
 import com.roadguard.roadGuard_backend.entity.*;
 import org.modelmapper.ModelMapper;
@@ -49,6 +51,12 @@ public class AppConfig {
         modelMapper.createTypeMap(Notification.class, NotificationResponseDto.class)
                 .addMappings(mapper -> {
                     mapper.map(Notification::getId, NotificationResponseDto::setNotificationId);
+                });
+        // Map LocationsDetailsRootDto to LocationDetailsDto
+        modelMapper.typeMap(LocationsDetailsRootDto.class, LocationDetailsDto.class)
+                .addMappings(mapper -> {
+                    mapper.map(LocationsDetailsRootDto::getDisplayName, LocationDetailsDto::setFullAddress);
+                    mapper.map(LocationsDetailsRootDto::getState_district, LocationDetailsDto::setDistrict);
                 });
 
 

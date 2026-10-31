@@ -5,14 +5,17 @@ import com.roadguard.roadGuard_backend.Service.OAuthLoginTicketService;
 import com.roadguard.roadGuard_backend.Service.OtpService;
 import com.roadguard.roadGuard_backend.dto.*;
 import com.roadguard.roadGuard_backend.entity.User;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/auth")
@@ -20,7 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private final AuthService authService;
     private final OtpService otpService;
-    private final OAuthLoginTicketService ticketService;
+    @Value("${AuthUrl}")
+    String AuthUrl;
 
     @PostMapping("/sendOtp")
     public ResponseEntity<OtpResponse> sendOtp(@RequestBody @Valid OtpRequestDto requestDto) {
@@ -51,6 +55,11 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/oAuth2/mobileStart")
+    public void startMobileOAuth2(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        request.getSession().setAttribute("mobile-flow", true);
+        response.sendRedirect(AuthUrl);
 
+    }
 
 }
