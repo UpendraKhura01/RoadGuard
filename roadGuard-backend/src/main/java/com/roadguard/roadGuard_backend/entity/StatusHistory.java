@@ -31,6 +31,7 @@ public class StatusHistory {
     @ManyToOne(fetch = FetchType.LAZY)
     private User changedBy;
 
+    @Column(columnDefinition = "TEXT")
     private String notes;
 
     private LocalDateTime createdAt;

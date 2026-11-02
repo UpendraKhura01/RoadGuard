@@ -30,6 +30,7 @@ public class WebSecurityConfig {
                         auth -> auth
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/roadInfo/**").permitAll()
+                                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/actuator/**").permitAll()
                                 .requestMatchers("/admin/**").hasAnyRole("ADMIN", "AUTHORITY")
                                 .requestMatchers("/user/**").authenticated()
                                 .requestMatchers("/notification/**").authenticated()

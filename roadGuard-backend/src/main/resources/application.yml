@@ -58,3 +58,13 @@ APP:
   DEEP-LINK: ${APP_DEEP_LINK}
 
 AuthUrl: ${AUTHURL}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      show-components: never

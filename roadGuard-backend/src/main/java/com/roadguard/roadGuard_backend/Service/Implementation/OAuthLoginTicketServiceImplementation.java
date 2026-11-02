@@ -22,6 +22,7 @@ public class OAuthLoginTicketServiceImplementation implements OAuthLoginTicketSe
     private static final int EXPIRATION_MINUTES = 5;
 
     @Override
+    @Transactional
     public String createTicket(Long userId) {
         oAuthLoginTicketRepository.deleteByExpiresAtBefore(LocalDateTime.now());
         String code = UUID.randomUUID().toString().replace("-", "");
