@@ -16,6 +16,7 @@ dependencies:
   latlong2: ^0.9.1
   app_links: ^6.4.0
   url_launcher: ^6.3.1
+  flutter_secure_storage: ^11.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

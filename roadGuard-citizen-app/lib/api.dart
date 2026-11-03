@@ -3,13 +3,33 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'config.dart';
 
 class RoadGuardApi {
+  static const FlutterSecureStorage _secureStorage = FlutterSecureStorage();
   String? token;
 
+  Future<void> restoreToken() async {
+    token = await _secureStorage.read(key: 'roadguard_jwt');
+  }
+
   Uri _uri(String path) => Uri.parse('${AppConfig.apiBaseUrl}$path');
+
+
+  Future<bool> checkServiceHealth() async {
+    try {
+      final response = await http
+          .get(_uri('/actuator/health'))
+          .timeout(const Duration(seconds: 6));
+      if (response.statusCode < 200 || response.statusCode >= 300) return false;
+      final body = jsonDecode(response.body);
+      return body is Map && body['status']?.toString().toUpperCase() == 'UP';
+    } catch (_) {
+      return false;
+    }
+  }
 
   Uri get mobileOAuthStartUri => _uri('/auth/oAuth2/mobileStart');
 
@@ -128,13 +148,21 @@ class RoadGuardApi {
         ),
       );
 
-  Map<String, dynamic> _saveAuth(dynamic response) {
+  Future<Map<String, dynamic>> _saveAuth(dynamic response) async {
     final data = Map<String, dynamic>.from(response as Map);
-    token = data['token']?.toString();
+    final receivedToken = data['token']?.toString();
+    if (receivedToken == null || receivedToken.isEmpty) {
+      throw Exception('The backend response did not include a token.');
+    }
+    token = receivedToken;
+    await _secureStorage.write(key: 'roadguard_jwt', value: receivedToken);
     return data;
   }
 
-  void clearToken() => token = null;
+  Future<void> clearToken() async {
+    token = null;
+    await _secureStorage.delete(key: 'roadguard_jwt');
+  }
 
   Future<List<dynamic>> reports(String path) async {
     final response = _decode(await http.get(_uri(path), headers: _headers));
@@ -179,7 +207,7 @@ class RoadGuardApi {
         }),
       ),
     );
-    _saveAuth(response);
+    await _saveAuth(response);
   }
 
   Future<void> submitFeedback(int reportId, String feedback, int rating) async {

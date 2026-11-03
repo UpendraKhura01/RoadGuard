@@ -720,6 +720,7 @@ class _AuthPageState extends State<AuthPage> {
   late final AppLinks appLinks;
   StreamSubscription<Uri>? appLinkSubscription;
   bool handlingOAuthCallback = false;
+  bool restoringSession = true;
   final phone = TextEditingController();
   final password = TextEditingController();
   final otp = TextEditingController();
@@ -741,6 +742,48 @@ class _AuthPageState extends State<AuthPage> {
       onError: (Object error) {
         if (mounted) _message('Could not receive the Google sign-in callback.');
       },
+    );
+    unawaited(_restoreSession());
+  }
+
+  Future<void> _restoreSession() async {
+    try {
+      await api.restoreToken();
+      if (api.token == null || api.token!.isEmpty) return;
+      try {
+        final profile = await api.profile();
+        final role = (profile['roles'] ?? profile['role'] ?? '')
+            .toString()
+            .toUpperCase();
+        if (role.isNotEmpty && role != 'CITIZEN') {
+          await api.clearToken();
+          return;
+        }
+        _openHome((profile['name'] ?? 'Citizen').toString());
+      } catch (error) {
+        final message = error.toString().toLowerCase();
+        if (message.contains('sign-in failed') ||
+            message.contains('not allowed to use the citizen app')) {
+          await api.clearToken();
+          return;
+        }
+        // Keep a still-stored session during temporary network/API failures.
+        _openHome('Citizen');
+      }
+    } catch (_) {
+      // If secure storage cannot be read, leave the user at the sign-in screen.
+    } finally {
+      if (mounted) setState(() => restoringSession = false);
+    }
+  }
+
+  void _openHome(String displayName) {
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => HomePage(api: api, username: displayName),
+      ),
     );
   }
 
@@ -803,7 +846,7 @@ class _AuthPageState extends State<AuthPage> {
     if (result['token'] == null)
       throw Exception('The backend response did not include a token.');
     if ((result['role'] ?? '').toString().toUpperCase() != 'CITIZEN') {
-      api.clearToken();
+      await api.clearToken();
       throw Exception(
         'This account is for the admin website. Sign in with a citizen account here.',
       );
@@ -819,12 +862,7 @@ class _AuthPageState extends State<AuthPage> {
             result['username'] ??
             (name.text.trim().isNotEmpty ? name.text.trim() : 'Citizen'))
         .toString();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => HomePage(api: api, username: displayName),
-      ),
-    );
+    _openHome(displayName);
   }
 
   void _message(String value) => ScaffoldMessenger.of(context)
@@ -843,6 +881,11 @@ class _AuthPageState extends State<AuthPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (restoringSession) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
     if (!started) {
       return _RoadGuardWelcomePage(
         onGetStarted: () => setState(() => started = true),
@@ -857,7 +900,7 @@ class _AuthPageState extends State<AuthPage> {
           onPressed: () => setState(() => started = false),
           icon: const Icon(Icons.arrow_back),
         ),
-        actions: const [RoadGuardThemeButton()],
+        actions: [_RenderHealthButton(api: api), const RoadGuardThemeButton()],
       ),
       body: SafeArea(
         child: Center(
@@ -1216,6 +1259,75 @@ class _WelcomeRoadPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
+
+class _RenderHealthButton extends StatefulWidget {
+  const _RenderHealthButton({required this.api});
+  final RoadGuardApi api;
+  @override
+  State<_RenderHealthButton> createState() => _RenderHealthButtonState();
+}
+
+class _RenderHealthButtonState extends State<_RenderHealthButton> {
+  bool _checking = false;
+  _RenderHealthState _status = _RenderHealthState.checking;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _check());
+  }
+
+  Future<void> _check() async {
+    if (_checking) return;
+    setState(() { _checking = true; _status = _RenderHealthState.checking; });
+    for (var attempt = 0; attempt < 5; attempt++) {
+      if (attempt > 0) {
+        if (mounted) setState(() => _status = _RenderHealthState.waking);
+        await Future<void>.delayed(const Duration(seconds: 8));
+      }
+      if (!mounted) return;
+      if (await widget.api.checkServiceHealth()) {
+        if (mounted) setState(() { _status = _RenderHealthState.online; _checking = false; });
+        return;
+      }
+    }
+    if (mounted) setState(() { _status = _RenderHealthState.unavailable; _checking = false; });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = switch (_status) {
+      _RenderHealthState.online => Colors.green,
+      _RenderHealthState.waking || _RenderHealthState.checking => Colors.orange,
+      _RenderHealthState.unavailable => Colors.red,
+    };
+    final tooltip = switch (_status) {
+      _RenderHealthState.online => 'Render is online. Tap to check again.',
+      _RenderHealthState.waking => 'Render may be waking up. Checking again shortly.',
+      _RenderHealthState.checking => 'Checking Render service status.',
+      _RenderHealthState.unavailable => 'Could not reach Render; it may be asleep or unavailable. Tap to retry.',
+    };
+    return IconButton(
+      tooltip: tooltip,
+      visualDensity: VisualDensity.compact,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints.tightFor(width: 36, height: 36),
+      onPressed: _checking ? null : _check,
+      icon: Container(
+        width: 10,
+        height: 10,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(color: Theme.of(context).colorScheme.surface, width: 1),
+        ),
+      ),
+    );
+  }
+}
+
+enum _RenderHealthState { checking, waking, online, unavailable }
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.api, required this.username});
   final RoadGuardApi api;
@@ -1225,6 +1337,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  void _message(String value) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(value)),
+    );
+  }
+
   int tab = 0;
   bool loading = false;
   List<dynamic> mine = [];
@@ -1301,6 +1420,53 @@ class _HomePageState extends State<HomePage> {
         status != 'RESOLVED';
   }
 
+  Future<void> _centerMapOnCurrentLocation() async {
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) {
+        _message('Turn on device location to center the map.');
+        await Geolocator.openLocationSettings();
+        return;
+      }
+
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        _message('Allow location permission to center the map.');
+        await Geolocator.openAppSettings();
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+      if (!mounted) return;
+      setState(() {
+        currentLocation = LatLng(position.latitude, position.longitude);
+        currentCoordinates =
+            '${position.latitude.toStringAsFixed(5)}, ${position.longitude.toStringAsFixed(5)}';
+      });
+      try {
+        await widget.api.updateLocation(position.latitude, position.longitude);
+      } catch (_) {
+        // Map centering should still work if reverse geocoding is unavailable.
+      }
+    } catch (_) {
+      if (mounted) {
+        _message('Could not get your current location. Check GPS and try again.');
+      }
+    }
+  }
+
+  Future<void> _refreshMap() async {
+    await loadAll();
+    await _centerMapOnCurrentLocation();
+  }
+
   int get unreadCount =>
       notifications.where((n) => n is Map && n['isRead'] != true).length;
 
@@ -1360,7 +1526,7 @@ class _HomePageState extends State<HomePage> {
               api: widget.api,
               reports: nearby,
               currentLocation: currentLocation,
-              refresh: loadAll,
+              refresh: _refreshMap,
               openReport: _showReport,
             ),
             NearbyReportsPage(
@@ -1388,7 +1554,10 @@ class _HomePageState extends State<HomePage> {
         ),
         bottomNavigationBar: NavigationBar(
           selectedIndex: tab,
-          onDestinationSelected: (value) => setState(() => tab = value),
+          onDestinationSelected: (value) {
+            setState(() => tab = value);
+            if (value == 1) _centerMapOnCurrentLocation();
+          },
           destinations: const [
             NavigationDestination(
                 icon: Icon(Icons.home_outlined), label: 'Home'),
@@ -2080,8 +2249,9 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
-            onPressed: () {
-              widget.api.clearToken();
+            onPressed: () async {
+              await widget.api.clearToken();
+              if (!context.mounted) return;
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const AuthPage()),
@@ -2312,6 +2482,12 @@ class _PublicMapPageState extends State<PublicMapPage> {
         .where((r) => r is Map && r['latitude'] is num && r['longitude'] is num)
         .toList();
     final groups = _groupReportPins(valid, _mapZoom);
+    final fallbackCenter = valid.isNotEmpty
+        ? LatLng(
+            (valid.first['latitude'] as num).toDouble(),
+            (valid.first['longitude'] as num).toDouble(),
+          )
+        : const LatLng(20.5937, 78.9629);
     return Column(
       children: [
         Padding(
@@ -2353,8 +2529,12 @@ class _PublicMapPageState extends State<PublicMapPage> {
             mapController: _mapController,
             key: ValueKey(currentLocation),
             options: MapOptions(
-              initialCenter: currentLocation ?? const LatLng(20.2961, 85.8245),
-              initialZoom: currentLocation == null ? 12 : 15,
+              initialCenter: currentLocation ?? fallbackCenter,
+              initialZoom: currentLocation != null
+                  ? 15
+                  : valid.isNotEmpty
+                      ? 10
+                      : 5,
               onPositionChanged: (camera, _) {
                 if ((camera.zoom - _mapZoom).abs() >= 0.5 && mounted) {
                   setState(() => _mapZoom = camera.zoom);
@@ -2813,33 +2993,52 @@ class _CreateReportPageState extends State<CreateReportPage> {
       source: ImageSource.camera,
       imageQuality: 85,
     );
-    if (file != null && mounted) setState(() => image = File(file.path));
-  }
+    if (file == null || !mounted) return;
 
-  Future<void> locate() async {
-    setState(() => busy = true);
+    // Bind a fresh GPS fix to this camera capture immediately. The report must
+    // not silently use a later location obtained after the user has moved.
+    setState(() {
+      image = File(file.path);
+      position = null;
+      busy = true;
+    });
     try {
-      if (!await Geolocator.isLocationServiceEnabled()) {
-        await Geolocator.openLocationSettings();
-        throw Exception('Turn on device location, then try again.');
-      }
-      var permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied)
-        permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        await Geolocator.openAppSettings();
-        throw Exception('Allow location permission in Settings.');
-      }
-      position = await Geolocator.getCurrentPosition();
+      final capturedPosition = await _getCurrentPosition();
+      if (mounted) setState(() => position = capturedPosition);
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+          SnackBar(
+            content: Text(
+              '${e.toString().replaceFirst('Exception: ', '')} Retake the photo after GPS is available.',
+            ),
+          ),
         );
+      }
     } finally {
       if (mounted) setState(() => busy = false);
     }
+  }
+
+  Future<Position> _getCurrentPosition() async {
+    if (!await Geolocator.isLocationServiceEnabled()) {
+      await Geolocator.openLocationSettings();
+      throw Exception('Turn on device location, then retake the photo.');
+    }
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      await Geolocator.openAppSettings();
+      throw Exception('Allow location permission, then retake the photo.');
+    }
+    return Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+      ),
+    );
   }
 
   Future<void> submit() async {
@@ -2850,8 +3049,12 @@ class _CreateReportPageState extends State<CreateReportPage> {
       return;
     }
     if (position == null) {
-      await locate();
-      if (position == null) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Location was not captured. Turn on GPS and retake the photo.'),
+        ),
+      );
+      return;
     }
     setState(() => busy = true);
     try {
@@ -2944,18 +3147,18 @@ class _CreateReportPageState extends State<CreateReportPage> {
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.my_location, color: green),
               title: Text(
-                position == null
-                    ? 'Location not captured'
-                    : 'Location captured',
+                position != null
+                    ? 'Location captured with photo'
+                    : image == null
+                        ? 'Location will be captured automatically'
+                        : 'Location unavailable',
               ),
               subtitle: Text(
-                position == null
-                    ? 'Location is required'
-                    : '${position!.latitude.toStringAsFixed(5)}, ${position!.longitude.toStringAsFixed(5)} · ±${position!.accuracy.toStringAsFixed(0)} m',
-              ),
-              trailing: TextButton(
-                onPressed: busy ? null : locate,
-                child: const Text('Get location'),
+                position != null
+                    ? '${position!.latitude.toStringAsFixed(5)}, ${position!.longitude.toStringAsFixed(5)} · ±${position!.accuracy.toStringAsFixed(0)} m'
+                    : image == null
+                        ? 'Take the photo and RoadGuard will fetch its location.'
+                        : 'Turn on GPS and retake the photo to capture its location.',
               ),
             ),
             const SizedBox(height: 12),
