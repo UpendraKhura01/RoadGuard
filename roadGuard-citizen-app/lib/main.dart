@@ -1526,6 +1526,13 @@ class _HomePageState extends State<HomePage> {
               api: widget.api,
               reports: nearby,
               currentLocation: currentLocation,
+              fallbackLocation:
+                  profile['latitude'] is num && profile['longitude'] is num
+                      ? LatLng(
+                          (profile['latitude'] as num).toDouble(),
+                          (profile['longitude'] as num).toDouble(),
+                        )
+                      : null,
               refresh: _refreshMap,
               openReport: _showReport,
             ),
@@ -2419,12 +2426,14 @@ class PublicMapPage extends StatefulWidget {
     required this.api,
     required this.reports,
     required this.currentLocation,
+    required this.fallbackLocation,
     required this.refresh,
     required this.openReport,
   });
   final RoadGuardApi api;
   final List<dynamic> reports;
   final LatLng? currentLocation;
+  final LatLng? fallbackLocation;
   final Future<void> Function() refresh;
   final void Function(Map<String, dynamic>) openReport;
   @override
@@ -2482,12 +2491,19 @@ class _PublicMapPageState extends State<PublicMapPage> {
         .where((r) => r is Map && r['latitude'] is num && r['longitude'] is num)
         .toList();
     final groups = _groupReportPins(valid, _mapZoom);
-    final fallbackCenter = valid.isNotEmpty
-        ? LatLng(
-            (valid.first['latitude'] as num).toDouble(),
-            (valid.first['longitude'] as num).toDouble(),
-          )
-        : const LatLng(20.5937, 78.9629);
+    final reportPoints = valid
+        .map((report) => LatLng(
+              (report['latitude'] as num).toDouble(),
+              (report['longitude'] as num).toDouble(),
+            ))
+        .toList();
+    final fallbackCenter = widget.fallbackLocation ??
+        (reportPoints.isNotEmpty
+            ? reportPoints.first
+            : const LatLng(20.2961, 85.8245));
+    final fitReportArea = currentLocation == null &&
+        widget.fallbackLocation == null &&
+        reportPoints.isNotEmpty;
     return Column(
       children: [
         Padding(
@@ -2527,14 +2543,22 @@ class _PublicMapPageState extends State<PublicMapPage> {
         Expanded(
           child: FlutterMap(
             mapController: _mapController,
-            key: ValueKey(currentLocation),
+            key: ValueKey(
+                '$currentLocation|${widget.fallbackLocation}|${valid.length}'),
             options: MapOptions(
+              initialCameraFit: fitReportArea
+                  ? CameraFit.coordinates(
+                      coordinates: reportPoints,
+                      padding: const EdgeInsets.all(48),
+                      minZoom: 12,
+                      maxZoom: 15,
+                    )
+                  : null,
               initialCenter: currentLocation ?? fallbackCenter,
-              initialZoom: currentLocation != null
+              initialZoom: currentLocation != null ||
+                      widget.fallbackLocation != null
                   ? 15
-                  : valid.isNotEmpty
-                      ? 10
-                      : 5,
+                  : 12,
               onPositionChanged: (camera, _) {
                 if ((camera.zoom - _mapZoom).abs() >= 0.5 && mounted) {
                   setState(() => _mapZoom = camera.zoom);
@@ -2564,8 +2588,11 @@ class _PublicMapPageState extends State<PublicMapPage> {
                       point: currentLocation,
                       width: 44,
                       height: 44,
-                      child: const Icon(Icons.my_location,
-                          color: Colors.blue, size: 34),
+                      child: const Tooltip(
+                        message: 'Your current GPS location',
+                        child: Icon(Icons.my_location,
+                            color: Colors.blue, size: 34),
+                      ),
                     ),
                   ],
                 ),
