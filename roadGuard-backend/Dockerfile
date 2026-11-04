@@ -6,7 +6,7 @@ COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
 COPY src/ src/
 
-RUN chmod +x mvnw && ./mvnw -DskipTests package
+RUN mvn -DskipTests package
 
 # Run the packaged app with Java 21
 FROM eclipse-temurin:21-jre
