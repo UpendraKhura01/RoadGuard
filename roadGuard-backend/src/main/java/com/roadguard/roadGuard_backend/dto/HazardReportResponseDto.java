@@ -41,4 +41,9 @@ public class HazardReportResponseDto {
     private String decisionReason;
     private String aiExplanation;
 
+    private String road;
+
+    private Long contractorId;
+    private String contractorName;
+
 }

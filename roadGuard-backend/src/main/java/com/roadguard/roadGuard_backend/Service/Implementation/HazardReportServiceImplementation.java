@@ -4,7 +4,6 @@ import com.roadguard.roadGuard_backend.Repository.HazardReportRepository;
 import com.roadguard.roadGuard_backend.Repository.ReportImageRepository;
 import com.roadguard.roadGuard_backend.Repository.ReportSecurityCheckRepository;
 import com.roadguard.roadGuard_backend.Repository.UserRepository;
-import com.roadguard.roadGuard_backend.Security.AuthUtil;
 import com.roadguard.roadGuard_backend.Service.*;
 import com.roadguard.roadGuard_backend.Service.AIServices.AiAssessmentService;
 import com.roadguard.roadGuard_backend.dto.*;
@@ -12,6 +11,7 @@ import com.roadguard.roadGuard_backend.entity.*;
 import com.roadguard.roadGuard_backend.entity.types.HazardCategory;
 import com.roadguard.roadGuard_backend.entity.types.ImageSource;
 import com.roadguard.roadGuard_backend.entity.types.ReportStatus;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,8 +37,6 @@ public class HazardReportServiceImplementation implements HazardReportService {
     private final HazardReportUtil hazardReportUtil;
     private final NotificationService notificationService;
     private final ModelMapper modelMapper;
-    private final AuthUtil authUtil;
-
 
     @Transactional
     public HazardReportResponseDto createReport(Long userId,
@@ -126,6 +124,12 @@ public class HazardReportServiceImplementation implements HazardReportService {
             throw new IllegalArgumentException("No report found with id " + id);
         }
         HazardReportResponseDto response = modelMapper.map(report, HazardReportResponseDto.class);
+
+        if (report.getContractor() != null) {
+            response.setContractorId(report.getContractor().getId());
+            response.setContractorName(report.getContractor().getName());
+        }
+
         return response;
     }
 
@@ -135,35 +139,61 @@ public class HazardReportServiceImplementation implements HazardReportService {
         List<HazardReport> reports = hazardReportRepository.findByUser(user);
 
         List<HazardReportResponseDto> response = reports.stream()
-                .map(report -> modelMapper.map(report, HazardReportResponseDto.class))
+                .map(report -> {
+                    HazardReportResponseDto dto = modelMapper.map(report, HazardReportResponseDto.class);
+                    if (report.getContractor() != null) {
+                        dto.setContractorId(report.getContractor().getId());
+                        dto.setContractorName(report.getContractor().getName());
+                    }
+                    return dto;
+                })
                 .toList();
 
         return response;
     }
 
     @Override
-    public Page<HazardReportResponseDto> getVerifiedReports(User user, Pageable pageable) {
-        Page<HazardReport> reports = hazardReportRepository.findByReportStatus(ReportStatus.VERIFIED, pageable);
-        return reports.map(report -> modelMapper.map(report, HazardReportResponseDto.class));
+    public Page<@NonNull HazardReportResponseDto> getVerifiedReports(User user, Pageable pageable) {
+        Page<@NonNull HazardReport> reports = hazardReportRepository.findByReportStatus(ReportStatus.VERIFIED, pageable);
+        return reports.map(report -> {
+            HazardReportResponseDto dto = modelMapper.map(report, HazardReportResponseDto.class);
+            if (report.getContractor() != null) {
+                dto.setContractorId(report.getContractor().getId());
+                dto.setContractorName(report.getContractor().getName());
+            }
+            return dto;
+        });
     }
 
     @Override
     public Page<HazardReportResponseDto> getReportsByStatus(ReportStatus status, Pageable pageable) {
         Page<HazardReport> reports = hazardReportRepository.findByReportStatus(status, pageable);
-        return reports.map(report -> modelMapper.map(report, HazardReportResponseDto.class));
+        return reports.map(report -> {
+            HazardReportResponseDto dto = modelMapper.map(report, HazardReportResponseDto.class);
+            if (report.getContractor() != null) {
+                dto.setContractorId(report.getContractor().getId());
+                dto.setContractorName(report.getContractor().getName());
+            }
+            return dto;
+        });
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<HazardReportResponseDto> getAllReports(Pageable pageable) {
         Page<HazardReport> responseDtos = hazardReportRepository.findAll(pageable);
-        return responseDtos.map(report -> modelMapper.map(report, HazardReportResponseDto.class));
+        return responseDtos.map(report -> {
+            HazardReportResponseDto dto = modelMapper.map(report, HazardReportResponseDto.class);
+            if (report.getContractor() != null) {
+                dto.setContractorId(report.getContractor().getId());
+                dto.setContractorName(report.getContractor().getName());
+            }
+            return dto;
+        });
     }
 
     @Override
     public List<HazardReportResponseDto> getNearbyReports(User user) {
-
-
         if(user.getWard() == null){
             throw new IllegalArgumentException("Location is not set");
         }
@@ -171,14 +201,19 @@ public class HazardReportServiceImplementation implements HazardReportService {
         List<ReportStatus> excludedStatuses = List.of(ReportStatus.RESOLVED, ReportStatus.REJECTED, ReportStatus.AI_REJECTED);
         List<HazardReport> reports = hazardReportRepository.findByWardAndReportStatusNotIn(user.getWard(), excludedStatuses);
         return reports.stream()
-                .map(report -> modelMapper.map(report, HazardReportResponseDto.class))
+                .map(report -> {
+                    HazardReportResponseDto dto = modelMapper.map(report, HazardReportResponseDto.class);
+                    if (report.getContractor() != null) {
+                        dto.setContractorId(report.getContractor().getId());
+                        dto.setContractorName(report.getContractor().getName());
+                    }
+                    return dto;
+                })
                 .toList();
     }
 
     @Override
     public List<HazardReportResponseDto> getCityReports(User user) {
-
-
         if(user.getBlock() == null){
             throw new IllegalArgumentException("Location is not set");
         }
@@ -186,33 +221,52 @@ public class HazardReportServiceImplementation implements HazardReportService {
         List<ReportStatus> excludedStatuses = List.of(ReportStatus.RESOLVED, ReportStatus.REJECTED, ReportStatus.AI_REJECTED);
         List<HazardReport> reports = hazardReportRepository.findByBlockAndReportStatusNotIn(user.getBlock(), excludedStatuses);
         return reports.stream()
-                .map(report -> modelMapper.map(report, HazardReportResponseDto.class))
+                .map(report -> {
+                    HazardReportResponseDto dto = modelMapper.map(report, HazardReportResponseDto.class);
+                    if (report.getContractor() != null) {
+                        dto.setContractorId(report.getContractor().getId());
+                        dto.setContractorName(report.getContractor().getName());
+                    }
+                    return dto;
+                })
                 .toList();
     }
 
     @Override
     public List<HazardReportResponseDto> getDistrictReports(User user) {
-
         if(user.getDistrict() == null){
             throw new IllegalArgumentException("Location is not set");
         }
 
         List<HazardReport> reports = hazardReportRepository.findByDistrict(user.getDistrict());
         return reports.stream()
-                .map(report -> modelMapper.map(report, HazardReportResponseDto.class))
+                .map(report -> {
+                    HazardReportResponseDto dto = modelMapper.map(report, HazardReportResponseDto.class);
+                    if (report.getContractor() != null) {
+                        dto.setContractorId(report.getContractor().getId());
+                        dto.setContractorName(report.getContractor().getName());
+                    }
+                    return dto;
+                })
                 .toList();
     }
 
     @Override
     public List<HazardReportResponseDto> getStateReports(User user) {
-
         if(user.getState() == null){
             throw new IllegalArgumentException("Location is not set");
         }
 
         List<HazardReport> reports = hazardReportRepository.findByState(user.getState());
         return reports.stream()
-                .map(report -> modelMapper.map(report, HazardReportResponseDto.class))
+                .map(report -> {
+                    HazardReportResponseDto dto = modelMapper.map(report, HazardReportResponseDto.class);
+                    if (report.getContractor() != null) {
+                        dto.setContractorId(report.getContractor().getId());
+                        dto.setContractorName(report.getContractor().getName());
+                    }
+                    return dto;
+                })
                 .toList();
     }
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Activity, AlertTriangle, ArrowDownRight, ArrowUpRight, Bell, Check, ChevronDown, ClipboardList, Clock3, Filter, LayoutDashboard, LogOut, Map as MapIcon, Menu, Moon, Plus, Search, ShieldCheck, Sun, Users, X } from 'lucide-react';
 import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip, useMap } from 'react-leaflet';
-import { addKnownContractorIds, api, getToken, login, Report, Analytics, Contractor, rememberContractorId, setToken } from './api';
+import { addKnownContractorIds, api, getToken, login, Report, RoadInfo, Analytics, Contractor, rememberContractorId, setToken } from './api';
 
 type Page='Dashboard'|'Reports'|'Map'|'Reviews'|'Assignments'|'Contractors';
 const defaults:Analytics={totalReports:0,pendingReports:0,verifiedReports:0,rejectedReports:0,totalUsers:0,activeContractors:0,reportsThisWeek:0,reportsThisMonth:0};
@@ -113,7 +113,82 @@ function HazardMap({reports,height,open}:{reports:Report[];height:string;open:(r
   </MapContainer>;
 }function MapPage({reports,open}:{reports:Report[];open:(r:Report)=>void}){return <><PageHeading eyebrow="GEOGRAPHIC VIEW" title="Hazard map" description="Explore report locations. Reporter identities are excluded."/><section className="panel map-full"><HazardMap reports={reports} height="min(68vh,720px)" open={open}/><div className="map-legend"><span><i className="dot amber"/>Active / needs review</span><span><i className="dot green"/>Resolved</span><span>{reports.length} reports loaded</span></div></section></>}
 
-function ReportModal({report:r,close,notify,refresh}:{report:Report;close:()=>void;notify:(s:string)=>void;refresh:()=>void}){const [decision,setDecision]=useState('APPROVE');const [cat,setCat]=useState(r.finalCategory||r.reportedCategory||'POTHOLE');const [severity,setSeverity]=useState(r.finalSeverity||r.aiSeverity||'MEDIUM');const [comment,setComment]=useState('');const [newStatus,setNewStatus]=useState('IN_PROGRESS');const [notes,setNotes]=useState('');const [busy,setBusy]=useState(false);const canReview=['PENDING_REVIEW','SUBMITTED'].includes(r.reportStatus||'');const categories=['POTHOLE','OPEN_MANHOLE','WATERLOGGING','FALLEN_TREE','BROKEN_STREETLIGHT','DAMAGED_ROAD','BROKEN_TRAFFIC_SIGNAL','OTHER'];const finish=async(path:string,body:unknown,msg:string)=>{setBusy(true);try{await api(path,{method:'POST',body:JSON.stringify(body)});notify(msg);await refresh();close()}catch(e){notify((e as Error).message)}finally{setBusy(false)}};return <div className="modal-scrim" onMouseDown={e=>{if(e.target===e.currentTarget)close()}}><div className="modal"><div className="modal-head"><div><div className="eyebrow">REPORT #{r.reportId}</div><h2>{label(r.finalCategory||r.reportedCategory)}</h2></div><button className="iconbtn" onClick={close}><X/></button></div><div className="modal-body">{r.imageUrl&&<img className="report-photo" src={r.imageUrl} alt="Submitted road hazard"/>}<div className="detail-grid"><Detail label="Status" value={label(r.reportStatus)}/><Detail label="AI severity" value={label(r.aiSeverity)}/><Detail label="Final severity" value={label(r.finalSeverity)}/><Detail label="Location" value={[r.road,r.fullAddress,r.address,r.ward,r.city,r.district,r.state].filter(Boolean).join(', ')||'—'}/><Detail label="Coordinates" value={r.latitude&&r.longitude?`${r.latitude.toFixed(5)}, ${r.longitude.toFixed(5)}`:'—'}/><Detail label="Submitted" value={r.createdAt?new Date(r.createdAt).toLocaleString():'—'}/></div><div className="description-box"><b>Description</b><p>{r.description||'No description provided.'}</p></div>{r.aiExplanation&&<div className="ai-box"><b><ShieldCheck size={15}/> AI assessment signal</b><p>{r.aiExplanation}</p></div>}{canReview?<div className="form-section"><h3>Record review decision</h3><div className="form-row"><label>Decision<select value={decision} onChange={e=>setDecision(e.target.value)}>{['APPROVE','REJECT','NEED_MORE_INFO','MARK_DUPLICATE'].map(v=><option key={v}>{v}</option>)}</select></label><label>Final category<select value={cat} onChange={e=>setCat(e.target.value)}>{categories.map(v=><option key={v}>{v}</option>)}</select></label><label>Final severity<select value={severity} onChange={e=>setSeverity(e.target.value)}>{['LOW','MEDIUM','HIGH','CRITICAL'].map(v=><option key={v}>{v}</option>)}</select></label></div><label>Admin note<textarea value={comment} onChange={e=>setComment(e.target.value)} placeholder="Reason for this decision"/></label><button className="primary" disabled={busy} onClick={()=>finish(`/admin/reviewReport/${r.reportId}`,{finalDecision:decision,finalCategory:cat,finalSeverity:severity,comment},'Review decision saved')}>Save decision</button></div>:<div className="notice-box">This report has already left the review queue. Find it under All Reports; use the status section below for repair progress.</div>}<div className="form-section"><h3>Update repair status</h3><div className="form-row"><label>New status<select value={newStatus} onChange={e=>setNewStatus(e.target.value)}>{['VERIFIED','ASSIGNED','IN_PROGRESS','RESOLVED','REJECTED','DUPLICATE'].map(v=><option key={v}>{v}</option>)}</select></label><label className="wide">Update note<input value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Status update note"/></label></div><button className="secondary" disabled={busy} onClick={()=>finish(`/admin/updateReportStatus/${r.reportId}`,{newStatus,notes},'Report status updated')}>Update status</button></div></div></div></div>}
+function ReportModal({report:r,close,notify,refresh}:{report:Report;close:()=>void;notify:(s:string)=>void;refresh:()=>void}) {
+  const [decision,setDecision]=useState('APPROVE');
+  const [cat,setCat]=useState(r.finalCategory||r.reportedCategory||'POTHOLE');
+  const [severity,setSeverity]=useState(r.finalSeverity||r.aiSeverity||'MEDIUM');
+  const [comment,setComment]=useState('');
+  const [newStatus,setNewStatus]=useState('IN_PROGRESS');
+  const [notes,setNotes]=useState('');
+  const [busy,setBusy]=useState(false);
+  const [roadInfo,setRoadInfo]=useState<RoadInfo|null>(null);
+  const [roadInfoLoading,setRoadInfoLoading]=useState(true);
+  const [roadInfoError,setRoadInfoError]=useState(false);
+  const canReview=['PENDING_REVIEW','SUBMITTED'].includes(r.reportStatus||'');
+  const categories=['POTHOLE','OPEN_MANHOLE','WATERLOGGING','FALLEN_TREE','BROKEN_STREETLIGHT','DAMAGED_ROAD','BROKEN_TRAFFIC_SIGNAL','OTHER'];
+
+  useEffect(()=>{
+    let cancelled=false;
+    setRoadInfo(null);
+    setRoadInfoError(false);
+    setRoadInfoLoading(true);
+    if(r.latitude==null||r.longitude==null){
+      setRoadInfoError(true);
+      setRoadInfoLoading(false);
+      return ()=>{cancelled=true};
+    }
+    api<RoadInfo>(`/roadInfo/getRoadInfo/${r.latitude}/${r.longitude}`)
+      .then(value=>{if(!cancelled)setRoadInfo(value)})
+      .catch(()=>{if(!cancelled)setRoadInfoError(true)})
+      .finally(()=>{if(!cancelled)setRoadInfoLoading(false)});
+    return ()=>{cancelled=true};
+  },[r.reportId]);
+
+  const finish=async(path:string,body:unknown,msg:string)=>{
+    setBusy(true);
+    try{await api(path,{method:'POST',body:JSON.stringify(body)});notify(msg);await refresh();close()}
+    catch(e){notify((e as Error).message)}
+    finally{setBusy(false)}
+  };
+  const formatDate=(value?:string)=>value?new Date(value).toLocaleDateString():'—';
+
+  return <div className="modal-scrim" onMouseDown={e=>{if(e.target===e.currentTarget)close()}}>
+    <div className="modal">
+      <div className="modal-head"><div><div className="eyebrow">REPORT #{r.reportId}</div><h2>{label(r.finalCategory||r.reportedCategory)}</h2></div><button className="iconbtn" onClick={close}><X/></button></div>
+      <div className="modal-body">
+        {r.imageUrl&&<img className="report-photo" src={r.imageUrl} alt="Submitted road hazard"/>}
+        <div className="detail-grid">
+          <Detail label="Status" value={label(r.reportStatus)}/>
+          <Detail label="AI severity" value={label(r.aiSeverity)}/>
+          <Detail label="Final severity" value={label(r.finalSeverity)}/>
+          <Detail label="Location" value={[r.road,r.fullAddress,r.address,r.ward,r.city,r.district,r.state].filter(Boolean).join(', ')||'—'}/>
+          <Detail label="Coordinates" value={r.latitude!=null&&r.longitude!=null?`${r.latitude.toFixed(5)}, ${r.longitude.toFixed(5)}`:'—'}/>
+          <Detail label="Submitted" value={r.createdAt?new Date(r.createdAt).toLocaleString():'—'}/>
+          <Detail label="Assigned report contractor" value={r.contractorName?`${r.contractorName}${r.contractorId?` · ID ${r.contractorId}`:''}`:'Not assigned'}/>
+        </div>
+        <div className="description-box">
+          <b>Nearby road record</b>
+          {roadInfoLoading&&<p>Loading road information…</p>}
+          {!roadInfoLoading&&roadInfoError&&<p>No nearby road record was found, or its details could not be loaded.</p>}
+          {!roadInfoLoading&&roadInfo&&<div className="detail-grid">
+            <Detail label="Road" value={roadInfo.name||'—'}/>
+            <Detail label="Road-record contractor" value={roadInfo.contractorName||'—'}/>
+            <Detail label="Contractor phone" value={roadInfo.contractorContact||'—'}/>
+            <Detail label="Contractor email" value={roadInfo.contractorEmail||'—'}/>
+            <Detail label="Budget" value={roadInfo.budget==null?'—':String(roadInfo.budget)}/>
+            <Detail label="Last maintenance" value={formatDate(roadInfo.lastMaintenance)}/>
+            <Detail label="Warranty until" value={formatDate(roadInfo.warrantyTill)}/>
+          </div>}
+        </div>
+        <div className="description-box"><b>Description</b><p>{r.description||'No description provided.'}</p></div>
+        {r.aiExplanation&&<div className="ai-box"><b><ShieldCheck size={15}/> AI assessment signal</b><p>{r.aiExplanation}</p></div>}
+        {canReview?<div className="form-section"><h3>Record review decision</h3><div className="form-row"><label>Decision<select value={decision} onChange={e=>setDecision(e.target.value)}>{['APPROVE','REJECT','NEED_MORE_INFO','MARK_DUPLICATE'].map(v=><option key={v}>{v}</option>)}</select></label><label>Final category<select value={cat} onChange={e=>setCat(e.target.value)}>{categories.map(v=><option key={v}>{v}</option>)}</select></label><label>Final severity<select value={severity} onChange={e=>setSeverity(e.target.value)}>{['LOW','MEDIUM','HIGH','CRITICAL'].map(v=><option key={v}>{v}</option>)}</select></label></div><label>Admin note<textarea value={comment} onChange={e=>setComment(e.target.value)} placeholder="Reason for this decision"/></label><button className="primary" disabled={busy} onClick={()=>finish(`/admin/reviewReport/${r.reportId}`,{finalDecision:decision,finalCategory:cat,finalSeverity:severity,comment},'Review decision saved')}>Save decision</button></div>:<div className="notice-box">This report has already left the review queue. Find it under All Reports; use the status section below for repair progress.</div>}
+        <div className="form-section"><h3>Update repair status</h3><div className="form-row"><label>New status<select value={newStatus} onChange={e=>setNewStatus(e.target.value)}>{['VERIFIED','ASSIGNED','IN_PROGRESS','RESOLVED','REJECTED','DUPLICATE'].map(v=><option key={v}>{v}</option>)}</select></label><label className="wide">Update note<input value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Status update note"/></label></div><button className="secondary" disabled={busy} onClick={()=>finish(`/admin/updateReportStatus/${r.reportId}`,{newStatus,notes},'Report status updated')}>Update status</button></div>
+      </div>
+    </div>
+  </div>;
+}
+
 function Detail({label,value}:{label:string;value:string}){return <div className="detail"><small>{label}</small><b>{value||'—'}</b></div>}
 
 function Assignments({reports,contractors,refresh,notify}:{reports:Report[];contractors:Contractor[];refresh:()=>void;notify:(s:string)=>void}){const [rid,setRid]=useState('');const [cid,setCid]=useState('');const [manualId,setManualId]=useState('');const [busy,setBusy]=useState(false);const assignId=cid||manualId;const doAssign=async()=>{setBusy(true);try{await api('/admin/contractor/assign',{method:'POST',body:JSON.stringify({reportId:Number(rid),contractorId:Number(assignId)})});notify('Contractor assigned');await refresh()}catch(e){notify((e as Error).message)}finally{setBusy(false)}};return <><PageHeading eyebrow="FIELD OPERATIONS" title="Assignments" description="Choose a report and contractor to create an assignment."/><div className="assign-grid"><section className="panel form-panel"><h2>Assign contractor</h2><p>Select a contractor whose ID is available. Newly created contractors are remembered in this browser.</p><label>Report<select value={rid} onChange={e=>setRid(e.target.value)}><option value="">Choose a report</option>{reports.filter(r=>!['RESOLVED','REJECTED','AI_REJECTED'].includes(r.reportStatus||'')).map(r=><option key={r.reportId} value={r.reportId}>#{r.reportId} · {label(r.finalCategory||r.reportedCategory)} · {label(r.reportStatus)}</option>)}</select></label><label>Contractor<select value={cid} onChange={e=>{setCid(e.target.value);setManualId('')}}><option value="">Choose a contractor</option>{contractors.map((c,i)=><option key={`${c.phoneNumber||c.name}-${i}`} value={c.id??''} disabled={c.id==null}>{c.name}{c.id!=null?` · ID ${c.id}`:' · ID unavailable'}</option>)}</select></label>{contractors.some(c=>c.id==null)&&<div className="notice-box">The backend omits IDs for existing contractors. Add a new contractor to capture its ID, or enter a known ID below. IDs cannot be safely inferred from names.</div>}<details className="manual-id"><summary>Enter a known contractor ID</summary><input inputMode="numeric" value={manualId} onChange={e=>{setManualId(e.target.value);setCid('')}} placeholder="Contractor ID"/></details><button className="primary" onClick={doAssign} disabled={busy||!rid||!assignId}>Assign contractor</button></section><section className="panel"><div className="panel-head"><div><h2>Contractor directory</h2><p>{contractors.length} contractors returned by the backend</p></div></div><ContractorTable contractors={contractors}/></section></div></>}

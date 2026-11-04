@@ -37,7 +37,7 @@ public class RoadInformation {
     private LocalDateTime warrantyTill;
 
     @ManyToOne
-    @JoinColumn(name = "contractor_id")
+    @JoinColumn(name = "contractor_id", nullable = false)
     private Contractor contractor;
 
 }
