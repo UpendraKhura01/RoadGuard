@@ -821,6 +821,14 @@ class _AuthPageState extends State<AuthPage> {
     }
   }
 
+  bool _isStrongPassword(String value) =>
+      value.length >= 8 &&
+      RegExp(r'[a-z]').hasMatch(value) &&
+      RegExp(r'[A-Z]').hasMatch(value) &&
+      RegExp(r'\d').hasMatch(value) &&
+      RegExp(r'[^A-Za-z\d\s]').hasMatch(value) &&
+      !RegExp(r'\s').hasMatch(value);
+
   Future<void> _sendOtp() async {
     if (!RegExp(r'^[6-9][0-9]{9}$').hasMatch(phone.text.trim()))
       throw Exception('Enter a valid 10-digit Indian mobile number.');
@@ -966,8 +974,36 @@ class _AuthPageState extends State<AuthPage> {
                       }
                     },
                   ),
-                  if (usePassword || signup)
-                    _field(password, 'Password', obscure: true),
+                  if (usePassword || signup) ...[
+                    _field(
+                      password,
+                      'Password',
+                      obscure: true,
+                      onChanged: signup ? (_) => setState(() {}) : null,
+                    ),
+                    if (signup)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4, bottom: 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _passwordRule(
+                                password.text.length >= 8, 'At least 8 characters'),
+                            _passwordRule(RegExp(r'[A-Z]').hasMatch(password.text),
+                                'One uppercase letter'),
+                            _passwordRule(RegExp(r'[a-z]').hasMatch(password.text),
+                                'One lowercase letter'),
+                            _passwordRule(RegExp(r'\d').hasMatch(password.text),
+                                'One number'),
+                            _passwordRule(
+                                RegExp(r'[^A-Za-z\d\s]').hasMatch(password.text),
+                                'One special character'),
+                            _passwordRule(!RegExp(r'\s').hasMatch(password.text),
+                                'No spaces'),
+                          ],
+                        ),
+                      ),
+                  ],
                   if (!usePassword || signup) ...[
                     if (otpSent)
                       _field(otp, 'OTP code', keyboard: TextInputType.number),
@@ -996,6 +1032,10 @@ class _AuthPageState extends State<AuthPage> {
                         ? null
                         : () => _act(() async {
                               if (signup) {
+                                if (!_isStrongPassword(password.text)) {
+                                  throw Exception(
+                                      'Password does not meet the requirements shown above.');
+                                }
                                 if (!otpSent) {
                                   await _sendOtp();
                                   return;
@@ -1097,6 +1137,27 @@ class _AuthPageState extends State<AuthPage> {
       ),
     );
   }
+
+  Widget _passwordRule(bool satisfied, String label) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(
+          children: [
+            Icon(
+              satisfied ? Icons.check_circle : Icons.circle_outlined,
+              size: 15,
+              color: satisfied ? green : Colors.black54,
+            ),
+            const SizedBox(width: 7),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: satisfied ? green : Colors.black54,
+              ),
+            ),
+          ],
+        ),
+      );
 
   Widget _field(
     TextEditingController controller,

@@ -2,9 +2,7 @@ package com.roadguard.roadGuard_backend.dto;
 
 import com.roadguard.roadGuard_backend.CustomAnnotation.PhoneNumber;
 import com.roadguard.roadGuard_backend.entity.types.AuthProvider;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,7 +21,12 @@ public class SignupRequestDto {
     @NotBlank
     String name;
 
-    @NotNull
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, message = "Password must be at least 8 characters")
+    @Pattern(
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z\\d\\s])\\S+$",
+            message = "Password must include an uppercase letter, a lowercase letter, a number, and a special character"
+    )
     String password;
 
     AuthProvider authProvider;
