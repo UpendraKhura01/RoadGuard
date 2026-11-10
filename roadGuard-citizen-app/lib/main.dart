@@ -1409,6 +1409,7 @@ class _HomePageState extends State<HomePage> {
   bool loading = false;
   List<dynamic> mine = [];
   List<dynamic> nearby = [];
+  int nearbyTotalCount = 0;
   List<dynamic> notifications = [];
   Map<String, dynamic> profile = {};
   String? loadError;
@@ -1457,9 +1458,12 @@ class _HomePageState extends State<HomePage> {
         widget.api.profile().catchError((_) => <String, dynamic>{}),
       ]);
       if (!mounted) return;
+      final nearbyResponse = results[1] as List<dynamic>;
+      final visibleNearby = nearbyResponse.where(_isPublicReport).toList();
       setState(() {
         mine = results[0] as List<dynamic>;
-        nearby = (results[1] as List<dynamic>).where(_isPublicReport).toList();
+        nearby = visibleNearby;
+        nearbyTotalCount = _extractNearbyCount(nearbyResponse);
         notifications = results[2] as List<dynamic>;
         profile = results[3] as Map<String, dynamic>;
       });
@@ -1471,6 +1475,18 @@ class _HomePageState extends State<HomePage> {
     } finally {
       if (mounted) setState(() => loading = false);
     }
+  }
+
+  int _extractNearbyCount(List<dynamic> reports) {
+    for (final report in reports) {
+      if (report is Map && report['totalCount'] != null) {
+        final value = report['totalCount'];
+        if (value is num) return value.toInt();
+        final parsed = int.tryParse(value.toString());
+        if (parsed != null) return parsed;
+      }
+    }
+    return reports.length;
   }
 
   bool _isPublicReport(dynamic raw) {
@@ -1575,6 +1591,7 @@ class _HomePageState extends State<HomePage> {
             _HomeTab(
               username: widget.username,
               nearby: nearby,
+              nearbyCount: nearbyTotalCount,
               mine: mine,
               loading: loading,
               error: loadError,
@@ -1586,6 +1603,7 @@ class _HomePageState extends State<HomePage> {
             PublicMapPage(
               api: widget.api,
               reports: nearby,
+              nearbyCount: nearbyTotalCount,
               currentLocation: currentLocation,
               fallbackLocation:
                   profile['latitude'] is num && profile['longitude'] is num
@@ -1599,6 +1617,7 @@ class _HomePageState extends State<HomePage> {
             ),
             NearbyReportsPage(
               reports: nearby,
+              nearbyCount: nearbyTotalCount,
               loading: loading,
               error: loadError,
               refresh: loadAll,
@@ -1662,6 +1681,7 @@ class _HomeTab extends StatelessWidget {
   const _HomeTab({
     required this.username,
     required this.nearby,
+    required this.nearbyCount,
     required this.mine,
     required this.loading,
     required this.error,
@@ -1672,6 +1692,7 @@ class _HomeTab extends StatelessWidget {
   });
   final String username;
   final List<dynamic> nearby;
+  final int nearbyCount;
   final List<dynamic> mine;
   final bool loading;
   final String? error;
@@ -1745,6 +1766,11 @@ class _HomeTab extends StatelessWidget {
                     onPressed: showNearby, child: const Text('View list')),
               ],
             ),
+            Padding(
+              padding: const EdgeInsets.only(top: 2, bottom: 8),
+              child: Text('$nearbyCount reports around your current area',
+                  style: Theme.of(context).textTheme.bodySmall),
+            ),
             if (loading)
               const Center(child: CircularProgressIndicator())
             else if (error != null)
@@ -1784,12 +1810,14 @@ class NearbyReportsPage extends StatelessWidget {
   const NearbyReportsPage({
     super.key,
     required this.reports,
+    required this.nearbyCount,
     required this.loading,
     required this.error,
     required this.refresh,
     required this.openReport,
   });
   final List<dynamic> reports;
+  final int nearbyCount;
   final bool loading;
   final String? error;
   final Future<void> Function() refresh;
@@ -1805,7 +1833,7 @@ class NearbyReportsPage extends StatelessWidget {
               style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
-            const Text('Reports in your area. Rejected reports are not shown.'),
+            Text('$nearbyCount reports around your current area. Rejected and resolved reports are not shown.'),
             const SizedBox(height: 14),
             if (loading)
               const Center(child: CircularProgressIndicator())
@@ -2486,6 +2514,7 @@ class PublicMapPage extends StatefulWidget {
     super.key,
     required this.api,
     required this.reports,
+    required this.nearbyCount,
     required this.currentLocation,
     required this.fallbackLocation,
     required this.refresh,
@@ -2493,6 +2522,7 @@ class PublicMapPage extends StatefulWidget {
   });
   final RoadGuardApi api;
   final List<dynamic> reports;
+  final int nearbyCount;
   final LatLng? currentLocation;
   final LatLng? fallbackLocation;
   final Future<void> Function() refresh;
@@ -2600,6 +2630,11 @@ class _PublicMapPageState extends State<PublicMapPage> {
               ),
             ],
           ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Text('${widget.nearbyCount} reports around your current area',
+              style: Theme.of(context).textTheme.bodySmall),
         ),
         Expanded(
           child: FlutterMap(

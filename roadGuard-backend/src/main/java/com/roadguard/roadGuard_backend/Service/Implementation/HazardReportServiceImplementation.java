@@ -194,15 +194,32 @@ public class HazardReportServiceImplementation implements HazardReportService {
 
     @Override
     public List<HazardReportResponseDto> getNearbyReports(User user) {
-        if(user.getWard() == null){
+        if(user.getLatitude() == null || user.getLongitude() == null){
             throw new IllegalArgumentException("Location is not set");
         }
+        double radiusKm = 15.0;
+        //bounding box (1 degree ≈ 111 km)
+        double latDelta = radiusKm/ 111.0;
+        double lngDelta = radiusKm / (111.0 * Math.cos(Math.toRadians(user.getLatitude())));
+
+        double minLat = user.getLatitude() - latDelta;
+        double maxLat = user.getLatitude() + latDelta;
+
+        double minLng = user.getLongitude() - lngDelta;
+        double maxLng = user.getLongitude() + lngDelta;
+
 
         List<ReportStatus> excludedStatuses = List.of(ReportStatus.RESOLVED, ReportStatus.REJECTED, ReportStatus.AI_REJECTED);
-        List<HazardReport> reports = hazardReportRepository.findByWardAndReportStatusNotIn(user.getWard(), excludedStatuses);
+
+        List<HazardReport> reports = hazardReportRepository.findNearbyReportsWithinRadius(minLat, maxLat, minLng, maxLng, excludedStatuses);
+
+        int totalCount = hazardReportRepository.countNearbyReportsWithinRadius(
+                minLat, maxLat, minLng, maxLng, excludedStatuses
+        );
         return reports.stream()
                 .map(report -> {
                     HazardReportResponseDto dto = modelMapper.map(report, HazardReportResponseDto.class);
+                    dto.setTotalCount(totalCount);
                     if (report.getContractor() != null) {
                         dto.setContractorId(report.getContractor().getId());
                         dto.setContractorName(report.getContractor().getName());
@@ -270,16 +287,6 @@ public class HazardReportServiceImplementation implements HazardReportService {
                 .toList();
     }
 
-    @Override
-    public long getNearbyReportsCount(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        if(user.getWard() == null){
-            throw new IllegalArgumentException("Location is not set");
-        }
-        List<ReportStatus> excludedStatuses = List.of(ReportStatus.RESOLVED, ReportStatus.REJECTED, ReportStatus.AI_REJECTED);
-        return hazardReportRepository.countByWardAndReportStatusNotIn(user.getWard(), excludedStatuses);
-    }
 
     @Override
     public long getCityReportsCount(Long userId) {

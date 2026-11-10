@@ -53,4 +53,28 @@ public interface HazardReportRepository extends JpaRepository<HazardReport, Long
             ") FROM HazardReport h")
     AnalyticsCountDto getAnalyticsCounts(@Param("weekAgo") LocalDateTime weekAgo,
                                          @Param("monthAgo") LocalDateTime monthAgo);
+
+    @Query("SELECT h FROM HazardReport h WHERE " +
+            "h.latitude BETWEEN :minLat AND :maxLat AND " +
+            "h.longitude BETWEEN :minLng AND :maxLng AND " +
+            "h.reportStatus NOT IN :excludedStatuses")
+    List<HazardReport> findNearbyReportsWithinRadius(
+            @Param("minLat") double minLat,
+            @Param("maxLat") double maxLat,
+            @Param("minLng") double minLng,
+            @Param("maxLng") double maxLng,
+            @Param("excludedStatuses") List<ReportStatus> excludedStatuses
+    );
+
+    @Query("SELECT COUNT(h) FROM HazardReport h WHERE " +
+            "h.latitude BETWEEN :minLat AND :maxLat AND " +
+            "h.longitude BETWEEN :minLng AND :maxLng AND " +
+            "h.reportStatus NOT IN :excludedStatuses")
+    int countNearbyReportsWithinRadius(
+            @Param("minLat") double minLat,
+            @Param("maxLat") double maxLat,
+            @Param("minLng") double minLng,
+            @Param("maxLng") double maxLng,
+            @Param("excludedStatuses") List<ReportStatus> excludedStatuses
+    );
 }
