@@ -147,13 +147,6 @@ public class HazardReportController {
         return ResponseEntity.ok(response);
     }
 
-
-    @GetMapping("/nearbyReports/count")
-    public ResponseEntity<Long> getNearByReportsCount(Authentication authentication){
-        User user = (User)authentication.getPrincipal();
-        return ResponseEntity.ok(hazardReportService.getNearbyReportsCount(user.getId()));
-    }
-
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHORITY')")
     @GetMapping("/cityReports/count")
     public ResponseEntity<Long> getCityReportsCount(Authentication authentication){

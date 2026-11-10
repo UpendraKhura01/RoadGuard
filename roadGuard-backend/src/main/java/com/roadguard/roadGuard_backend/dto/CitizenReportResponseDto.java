@@ -18,6 +18,8 @@ public class CitizenReportResponseDto {
 
     private Long reportId;
 
+    private int totalCount;
+
     private String description;
     private HazardCategory reportedCategory;
     private HazardCategory finalCategory;
